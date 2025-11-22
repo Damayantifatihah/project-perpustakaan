@@ -11,9 +11,16 @@ export default function HomePage() {
 
   // Load data buku
   useEffect(() => {
-    fetch("/api/buku")
-      .then((res) => res.json())
-      .then((data) => setBuku(data));
+    const fetchBuku = async () => {
+      try {
+        const res = await fetch("/api/buku", { cache: "no-store" });
+        const data = await res.json();
+        setBuku(data);
+      } catch (error) {
+        console.error("Gagal fetch buku:", error);
+      }
+    };
+    fetchBuku();
   }, []);
 
   // Load wishlist dari localStorage
@@ -31,7 +38,6 @@ export default function HomePage() {
   // Tambah ke wishlist
   const addToWishlist = (item) => {
     const already = wishlist.find((x) => x.id_buku === item.id_buku);
-
     if (already) return; // Biar tidak double
 
     const newList = [...wishlist, item];
@@ -55,13 +61,27 @@ export default function HomePage() {
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition p-4"
             >
               <div className="flex justify-center items-center rounded-xl bg-gray-100 h-56">
-                <Image
-                  src={`/buku/${item.gambar}`}
-                  alt={item.judul}
-                  width={150}
-                  height={200}
-                  className="object-contain h-full p-2"
-                />
+                {item.gambar?.startsWith("http") ? (
+                  <img
+                    src={item.gambar}
+                    alt={item.judul}
+                    className="object-contain h-full p-2"
+                    onError={(e) => {
+                      e.target.src = "/no-image.jpg";
+                    }}
+                  />
+                ) : (
+                  <Image
+                    src={item.gambar ? `/buku/${item.gambar}` : "/no-image.jpg"}
+                    alt={item.judul}
+                    width={150}
+                    height={200}
+                    className="object-contain h-full p-2"
+                    onError={(e) => {
+                      e.target.src = "/no-image.jpg";
+                    }}
+                  />
+                )}
               </div>
 
               <p className="text-gray-500 text-sm mt-3">

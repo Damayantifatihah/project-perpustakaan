@@ -4,7 +4,6 @@ import { Heart } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function DetailBuku() {
   const { id } = useParams();
@@ -17,9 +16,24 @@ export default function DetailBuku() {
       try {
         const res = await fetch(`/api/buku/${id}`);
         const data = await res.json();
-        setBuku(data);
+
+        if (!data || Object.keys(data).length === 0) {
+          setBuku(null);
+        } else {
+          setBuku({
+            id_buku: data.id_buku || data.id || id,
+            judul: data.judul || "",
+            pengarang: data.pengarang || "",
+            penerbit: data.penerbit || "-",
+            tahun_terbit: data.tahun_terbit || "-",
+            stok: data.stok ?? "-",
+            kategori: data.kategori || "-",
+            gambar: data.gambar || "",
+          });
+        }
       } catch (error) {
         console.error("Error fetch detail:", error);
+        setBuku(null);
       } finally {
         setLoading(false);
       }
@@ -36,7 +50,8 @@ export default function DetailBuku() {
     return <p className="p-6 text-red-600">Buku tidak ditemukan.</p>;
   }
 
-  const imagePath = `/buku/${buku.gambar}`;
+  // Path gambar aman
+  const imagePath = buku.gambar;
 
   // ==========================
   // ADD TO WISHLIST FUNCTION
@@ -67,13 +82,25 @@ export default function DetailBuku() {
 
         {/* Gambar Buku */}
         <div className="flex justify-center md:block">
-          <Image
-            src={imagePath}
-            alt={buku.judul}
-            width={280}
-            height={380}
-            className="rounded-xl shadow"
-          />
+          {imagePath?.startsWith("http") ? (
+            <img
+              src={imagePath}
+              alt={buku.judul}
+              width={280}
+              height={380}
+              className="rounded-xl shadow object-contain"
+              onError={(e) => { e.target.src = "/no-image.jpg"; }}
+            />
+          ) : (
+            <img
+              src={imagePath ? `/buku/${imagePath}` : "/no-image.jpg"}
+              alt={buku.judul}
+              width={280}
+              height={380}
+              className="rounded-xl shadow object-contain"
+              onError={(e) => { e.target.src = "/no-image.jpg"; }}
+            />
+          )}
         </div>
 
         {/* Detail */}
@@ -84,10 +111,8 @@ export default function DetailBuku() {
           <p><strong>Stok:</strong> {buku.stok}</p>
           <p><strong>Kategori:</strong> {buku.kategori}</p>
 
-          {/* Tombol Love + Pinjam */}
+          {/* Tombol Wishlist + Pinjam */}
           <div className="mt-6 flex gap-4">
-
-            {/* Tombol Wishlist */}
             <button
               onClick={addToWishlist}
               className="flex-1 flex items-center justify-center gap-2 border border-red-500 text-red-500 py-2 rounded-md hover:bg-red-500 hover:text-white transition"
@@ -96,15 +121,12 @@ export default function DetailBuku() {
               Wishlist
             </button>
 
-            {/* Tombol Pinjam */}
             <Link href={`/user/peminjaman/${id}`} className="flex-1">
               <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-md transition">
                 Pinjam
               </button>
             </Link>
-
           </div>
-
         </div>
       </div>
     </div>

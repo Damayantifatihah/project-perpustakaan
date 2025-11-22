@@ -1,13 +1,16 @@
+import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcrypt";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { email, password } = body;
+    const { email, password } = await req.json();
 
     if (!email || !password) {
-      return Response.json({ error: "Email dan password wajib diisi!" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email dan password wajib diisi!" },
+        { status: 400 }
+      );
     }
 
     const [rows] = await pool.query(
@@ -16,27 +19,37 @@ export async function POST(req) {
     );
 
     if (rows.length === 0) {
-      return Response.json({ error: "Email tidak ditemukan!" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Email tidak ditemukan!" },
+        { status: 404 }
+      );
     }
 
     const user = rows[0];
-
     const validPassword = await bcrypt.compare(password, user.password);
+
     if (!validPassword) {
-      return Response.json({ error: "Password salah!" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Password salah!" },
+        { status: 401 }
+      );
     }
 
-    return Response.json({
+    return NextResponse.json({
       message: "Login berhasil!",
       user: {
         id: user.id,
-        nama: user.nama,
+        nama: user.namaLengkap,
         email: user.email,
         role: user.role,
       },
     });
+
   } catch (err) {
-    console.error(err);
-    return Response.json({ error: "Terjadi kesalahan server" }, { status: 500 });
+    console.error("LOGIN ERROR:", err);
+    return NextResponse.json(
+      { error: "Terjadi kesalahan server" },
+      { status: 500 }
+    );
   }
 }

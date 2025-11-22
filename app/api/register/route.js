@@ -1,13 +1,16 @@
+import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import bcrypt from "bcrypt";
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { namaLengkap, email, kelasJurusan, telepon, password } = body;
+    const { namaLengkap, email, kelasJurusan, telepon, password } = await req.json();
 
     if (!namaLengkap || !email || !password) {
-      return Response.json({ error: "Data tidak lengkap!" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Data tidak lengkap!" },
+        { status: 400 }
+      );
     }
 
     const [existing] = await pool.query(
@@ -16,19 +19,38 @@ export async function POST(req) {
     );
 
     if (existing.length > 0) {
-      return Response.json({ error: "Email sudah terdaftar!" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Email sudah terdaftar!" },
+        { status: 400 }
+      );
     }
 
-    const hashed = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await pool.query(
-      "INSERT INTO users (namaLengkap, email, kelasJurusan, telepon, password, role) VALUES (?, ?, ?, ?, ?, ?)",
-      [namaLengkap, email, kelasJurusan || null, telepon || null, hashed, "siswa"]
+      `INSERT INTO users 
+        (namaLengkap, email, kelasJurusan, telepon, password, role) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        namaLengkap,
+        email,
+        kelasJurusan || null,
+        telepon || null,
+        hashedPassword,
+        "siswa",
+      ]
     );
 
-    return Response.json({ message: "Registrasi berhasil!" }, { status: 201 });
+    return NextResponse.json(
+      { message: "Registrasi berhasil!" },
+      { status: 201 }
+    );
+
   } catch (err) {
-    console.error(err);
-    return Response.json({ error: err.message || "Terjadi kesalahan server" }, { status: 500 });
+    console.error("REGISTER ERROR:", err);
+    return NextResponse.json(
+      { error: err.message || "Terjadi kesalahan server" },
+      { status: 500 }
+    );
   }
 }

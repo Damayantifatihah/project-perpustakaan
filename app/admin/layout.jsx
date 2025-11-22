@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
-import Sidebar from "./sideBar";
-import Topbar from "./topBar";
+import Sidebar from "../admin/sideBar";
+import Topbar from "../admin/topBar";
 
 export default function UserLayout({ children }) {
   const [isOpen, setIsOpen] = useState(true);

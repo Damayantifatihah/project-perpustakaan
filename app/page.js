@@ -105,7 +105,7 @@ export default function Landing() {
       </section>
 
       {/* Visi Misi */}
-      <section className="py-16 bg-white">
+      <section className="py-16 mb-50 bg-white">
         <div className="w-full max-w-5xl px-6 md:px-10">
           <h2 className="text-2xl font-semibold text-[#0a4e75] underline mb-6">
             Visi dan Misi Starbhak Library

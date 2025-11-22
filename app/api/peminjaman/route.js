@@ -16,6 +16,8 @@ export async function POST(req) {
       bukuId,
     } = await req.json();
 
+    
+
     const query = `
       INSERT INTO peminjaman 
       (nama, telepon, kelas, tgl_pinjam, tgl_kembali, judul_buku, id_buku, status)
@@ -49,16 +51,25 @@ export async function POST(req) {
 // ===============================
 export async function GET() {
   try {
-    const [rows] = await pool.query(
-      `SELECT 
-        id_pinjam,
-        nama,
-        judul_buku AS judulBuku,
-        tgl_pinjam AS tanggalPinjam,
-        status
-      FROM peminjaman
-      ORDER BY id_pinjam DESC`
-    );
+    const [rows] = await pool.query(`
+      SELECT 
+        p.id_pinjam,
+        p.nama,
+        p.telepon,
+        p.kelas,
+        p.tgl_pinjam,
+        p.tgl_kembali,
+        p.status,
+
+        b.id_buku,
+        b.judul AS judul_buku,
+        b.pengarang,
+        b.gambar AS gambar_buku
+
+      FROM peminjaman p
+      JOIN buku b ON p.id_buku = b.id_buku
+      ORDER BY p.id_pinjam DESC
+    `);
 
     return NextResponse.json(rows, { status: 200 });
   } catch (error) {

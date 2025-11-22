@@ -10,8 +10,8 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
 
   // 🔹 MENU KHUSUS ADMIN
   const menus = [
-    { name: "Dashboard", icon: <Home size={26} />, path: "/admin" },
-    { name: "Daftar Buku", icon: <BookCopy size={26} />, path: "/admin/buku" },
+    { name: "Dashboard", icon: <Home size={26} />, path: "/admin/dashboard" },
+    { name: "Kelola Buku", icon: <BookCopy size={26} />, path: "/admin/kelolaBuku" },
     { name: "Kategori", icon: <Layers size={26} />, path: "/admin/kategori" },
   ];
 
@@ -70,7 +70,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
                   ? "bg-[#E8F7F0] text-[#0a4e75] shadow-sm"
                   : "text-[#0a4e75] hover:bg-[#F3FAF7]"
               } ${isOpen ? "justify-start gap-5 px-6" : "justify-center px-0"}`}
-              onClick={() => isOpen && toggleSidebar()}
             >
               <span className="flex justify-center w-12">{menu.icon}</span>
               {isOpen && <span>{menu.name}</span>}
@@ -78,6 +77,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
           );
         })}
       </nav>
+
 
       {/* Logout */}
       <div className="mt-auto px-7 py-8 border-t border-gray-100">

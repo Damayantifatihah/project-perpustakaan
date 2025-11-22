@@ -29,11 +29,10 @@ export default function PeminjamanPage() {
         setLoading(false);
       }
     }
-
     fetchDetail();
   }, [id]);
 
-  // === AUTO TANGGAL KEMBALI ===
+  // Auto hitung tanggal kembali
   const handleTanggalPinjam = (value) => {
     setTanggalPinjam(value);
 
@@ -49,7 +48,7 @@ export default function PeminjamanPage() {
     }
   };
 
-  // === HANDLE SUBMIT ===
+  // Submit peminjaman
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -61,24 +60,26 @@ export default function PeminjamanPage() {
       tanggalKembali,
       judulBuku: buku.judul,
       bukuId: id,
+      status: "Menunggu Proses", // status default
     };
 
     try {
       const res = await fetch("/api/peminjaman", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(dataPeminjaman),
       });
 
       if (!res.ok) {
-        console.warn("ERROR API:");
         const errorData = await res.json();
-        console.error(errorData);
+        console.error("API ERROR:", errorData);
         return alert("Gagal memproses peminjaman.");
       }
 
+      // Simpan username ke localStorage agar DaftarPinjam bisa filter
+      localStorage.setItem("username", nama);
+
+      // Redirect ke daftar pinjam
       router.push("/user/daftarpinjam");
     } catch (error) {
       console.error("Gagal submit:", error);
@@ -92,22 +93,17 @@ export default function PeminjamanPage() {
   return (
     <div className="p-6 flex justify-center w-full">
       <div className="w-full max-w-[900px] bg-white p-7 rounded-xl shadow-md">
-
         <h1 className="text-2xl font-bold text-center mb-6 text-[#0A4E75]">
           Form Peminjaman Buku
         </h1>
 
-        {/* CARD BUKU */}
         <div className="bg-[#0A4E75] text-white p-4 rounded-lg mb-6 text-sm">
           <p><strong>Judul:</strong> {buku.judul}</p>
           <p><strong>Pengarang:</strong> {buku.pengarang}</p>
           <p><strong>Penerbit:</strong> {buku.penerbit}</p>
         </div>
 
-        {/* FORM */}
         <form className="space-y-4" onSubmit={handleSubmit}>
-          
-          {/* Nama */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Nama Peminjam</label>
             <input
@@ -120,7 +116,6 @@ export default function PeminjamanPage() {
             />
           </div>
 
-          {/* Telepon */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">No. Telepon</label>
             <input
@@ -133,7 +128,6 @@ export default function PeminjamanPage() {
             />
           </div>
 
-          {/* Kelas */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Kelas / Jurusan</label>
             <input
@@ -146,7 +140,6 @@ export default function PeminjamanPage() {
             />
           </div>
 
-          {/* Tanggal Pinjam */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Tanggal Pinjam</label>
             <input
@@ -158,7 +151,6 @@ export default function PeminjamanPage() {
             />
           </div>
 
-          {/* Tanggal Kembali */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Tanggal Kembali</label>
             <input
@@ -172,7 +164,6 @@ export default function PeminjamanPage() {
             </p>
           </div>
 
-          {/* Judul Buku */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">Judul Buku</label>
             <input
@@ -183,16 +174,13 @@ export default function PeminjamanPage() {
             />
           </div>
 
-          {/* Tombol */}
           <button
             type="submit"
             className="w-full bg-green-600 hover:bg-green-700 transition text-white py-3 rounded-lg font-semibold"
           >
             Pinjam Sekarang
           </button>
-
         </form>
-
       </div>
     </div>
   );

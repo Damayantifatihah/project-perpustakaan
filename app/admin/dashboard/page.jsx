@@ -1,6 +1,6 @@
 "use client";
 
-import { Book, Layers, BookmarkCheck, CheckCircle } from "lucide-react";
+import { Book, Layers, BookmarkCheck, CheckCircle, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
@@ -10,11 +10,12 @@ export default function Dashboard() {
     dipinjam: 0,
     tersedia: 0,
   });
-  const [aktivitas, setAktivitas] = useState([]);
+  const [peminjaman, setPeminjaman] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchStatistik();
-    fetchAktivitas();
+    fetchPeminjaman();
   }, []);
 
   // ========================
@@ -31,7 +32,9 @@ export default function Dashboard() {
       const peminjamanRes = await fetch("/api/peminjaman");
       const peminjaman = peminjamanRes.ok ? await peminjamanRes.json() : [];
 
+      // FIXED — hitung dipinjam dari "Dipinjam" BUKAN status awal
       const dipinjamCount = peminjaman.filter(p => p.status === "Dipinjam").length;
+
       const tersediaCount = buku.length - dipinjamCount;
 
       setStatistik({
@@ -46,30 +49,17 @@ export default function Dashboard() {
   }
 
   // ========================
-  //  FETCH AKTIVITAS TERBARU
+  //  FETCH PEMINJAMAN
   // ========================
-  async function fetchAktivitas() {
+  async function fetchPeminjaman() {
     try {
-      const res = await fetch("/api/peminjaman?recent=true");
-      const peminjaman = res.ok ? await res.json() : [];
-
-      const recent = peminjaman.map(p => ({
-        id: p.id_pinjam, // =================== FIX PALING PENTING
-        nama: p.nama,
-        judul: p.judul_buku,
-        status: p.status,
-        waktu: new Date(p.tgl_pinjam).toLocaleString("id-ID", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      }));
-
-      setAktivitas(recent);
+      const res = await fetch("/api/peminjaman");
+      const data = res.ok ? await res.json() : [];
+      setPeminjaman(data);
+      setLoading(false);
     } catch (error) {
-      console.error("Gagal fetch aktivitas:", error);
+      console.error("Gagal fetch peminjaman:", error);
+      setLoading(false);
     }
   }
 
@@ -89,7 +79,8 @@ export default function Dashboard() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal update status");
 
-      fetchAktivitas();
+      alert("Status berhasil diupdate!");
+      fetchPeminjaman();
       fetchStatistik();
     } catch (error) {
       console.error(error);
@@ -97,74 +88,210 @@ export default function Dashboard() {
     }
   }
 
+  // Format tanggal
+  const formatTanggal = (tanggal) => {
+    if (!tanggal) return "-";
+    return new Date(tanggal).toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
   return (
-    <div className="p-7">
-      <h1 className="text-3xl font-bold text-[#0A4E75] mb-6">Dashboard Admin</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">Dashboard Admin</h1>
+          <p className="text-gray-600">Kelola peminjaman dan statistik perpustakaan</p>
+        </div>
 
-      {/* Statistik Card */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <Card icon={<Book size={32} />} color="blue" label="Total Buku" value={statistik.totalBuku} />
-        <Card icon={<Layers size={32} />} color="yellow" label="Total Kategori" value={statistik.totalKategori} />
-        <Card icon={<BookmarkCheck size={32} />} color="red" label="Sedang Dipinjam" value={statistik.dipinjam} />
-        <Card icon={<CheckCircle size={32} />} color="green" label="Buku Tersedia" value={statistik.tersedia} />
-      </div>
+        {/* Statistik Card */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card 
+            icon={<Book size={32} />} 
+            color="blue" 
+            label="Total Buku" 
+            value={statistik.totalBuku} 
+          />
+          <Card 
+            icon={<Layers size={32} />} 
+            color="purple" 
+            label="Total Kategori" 
+            value={statistik.totalKategori} 
+          />
+          <Card 
+            icon={<BookmarkCheck size={32} />} 
+            color="orange" 
+            label="Sedang Dipinjam" 
+            value={statistik.dipinjam} 
+          />
+          <Card 
+            icon={<CheckCircle size={32} />} 
+            color="green" 
+            label="Buku Tersedia" 
+            value={statistik.tersedia} 
+          />
+        </div>
 
-      {/* Aktivitas */}
-      <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100">
-        <h2 className="text-xl font-bold text-[#0A4E75] mb-4">Aktivitas Terbaru</h2>
+        {/* Tabel Peminjaman */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
+            <div className="flex items-center gap-3">
+              <Users className="w-6 h-6 text-indigo-600" />
+              <h2 className="text-2xl font-bold text-gray-800">Data Peminjaman Buku</h2>
+            </div>
+            <p className="text-gray-600 mt-1 ml-9">Kelola semua peminjaman buku perpustakaan</p>
+          </div>
 
-        <ul className="space-y-4">
-          {aktivitas.length === 0 ? (
-            <p className="text-gray-500">Belum ada aktivitas.</p>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+            </div>
+          ) : peminjaman.length === 0 ? (
+            <div className="p-12 text-center">
+              <BookmarkCheck className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">Belum ada data peminjaman</p>
+            </div>
           ) : (
-            aktivitas.map(a => (
-              <li
-                key={a.id}
-                className="p-4 rounded-lg bg-gray-50 border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2"
-              >
-                <div>
-                  <p className="text-gray-700 mb-1">
-                    📘 <strong>{a.judul}</strong> oleh <strong>{a.nama}</strong>
-                  </p>
-                  <span className="text-gray-500 text-sm">{a.waktu}</span>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b-2 border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      No
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Nama Siswa
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Kelas
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Buku
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Tgl Pinjam
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Tgl Kembali
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
+                      Aksi
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {peminjaman.map((item, index) => (
+                    <tr key={item.id_pinjam} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {index + 1}
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">{item.nama}</div>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {item.kelas}
+                        </span>
+                      </td>
+                      
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={
+                              item.gambar_buku?.startsWith("http")
+                                ? item.gambar_buku
+                                : `/buku/${item.gambar_buku}`
+                            }
+                            alt={item.judul_buku}
+                            className="w-12 h-16 object-cover rounded shadow-sm"
+                            onError={(e) => {
+                              e.target.src = "/no-image.jpg";
+                            }}
+                          />
+                          <div className="max-w-xs">
+                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                              {item.judul_buku}
+                            </div>
+                            <div className="text-xs text-gray-500">{item.pengarang}</div>
+                          </div>
+                        </div>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatTanggal(item.tgl_pinjam)}
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {formatTanggal(item.tgl_kembali)}
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
+                            item.status === "Dipinjam"
+                              ? "bg-blue-100 text-blue-800"
+                              : item.status === "Ditolak"
+                              ? "bg-red-100 text-red-800"
+                              : item.status === "Dikembalikan"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </td>
+                      
+                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                        <div className="flex justify-center gap-2">
+                          {item.status === "Proses" && (
+                            <>
+                              <button
+                                onClick={() => updateStatus(item.id_pinjam, "Dipinjam")}
+                                className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                title="Setujui Peminjaman"
+                              >
+                                Setujui
+                              </button>
+                              <button
+                                onClick={() => updateStatus(item.id_pinjam, "Ditolak")}
+                                className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                                title="Tolak Peminjaman"
+                              >
+                                Tolak
+                              </button>
+                            </>
+                          )}
 
-                  <div className="mt-2">
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        a.status === "Dipinjam"
-                          ? "bg-blue-100 text-blue-700 border border-blue-300"
-                          : a.status === "Ditolak"
-                          ? "bg-red-100 text-red-700 border border-red-300"
-                          : "bg-yellow-100 text-yellow-700 border border-yellow-300"
-                      }`}
-                    >
-                      {a.status}
-                    </span>
-                  </div>
-                </div>
+                          {item.status === "Dipinjam" && (
+                            <button
+                              onClick={() => updateStatus(item.id_pinjam, "Dikembalikan")}
+                              className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                              title="Konfirmasi Pengembalian"
+                            >
+                              Kembalikan
+                            </button>
+                          )}
 
-                {/* Button Proses */}
-                {a.status === "Proses" && (
-                  <div className="flex gap-2 mt-2 sm:mt-0">
-                    <button
-                      onClick={() => updateStatus(a.id, "Dipinjam")}
-                      className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                      Dipinjamkan
-                    </button>
-
-                    <button
-                      onClick={() => updateStatus(a.id, "Ditolak")}
-                      className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
-                    >
-                      Ditolak
-                    </button>
-                  </div>
-                )}
-              </li>
-            ))
+                          {(item.status === "Dikembalikan" || item.status === "Ditolak") && (
+                            <span className="text-xs text-gray-400 italic">Selesai</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-        </ul>
+        </div>
       </div>
     </div>
   );
@@ -174,14 +301,23 @@ export default function Dashboard() {
 //    CARD COMPONENT
 // ========================
 function Card({ icon, color, label, value }) {
+  const colorClasses = {
+    blue: 'bg-blue-100 text-blue-600',
+    purple: 'bg-purple-100 text-purple-600',
+    orange: 'bg-orange-100 text-orange-600',
+    green: 'bg-green-100 text-green-600'
+  };
+
   return (
-    <div className="bg-white p-6 shadow-md rounded-xl border flex items-center gap-4">
-      <div className={`p-4 rounded-lg bg-${color}-100 text-${color}-600`}>
-        {icon}
-      </div>
-      <div>
-        <p className="text-gray-500 text-sm">{label}</p>
-        <h2 className="text-2xl font-bold">{value}</h2>
+    <div className="bg-white p-6 shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-all duration-200">
+      <div className="flex items-center gap-4">
+        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
+          {icon}
+        </div>
+        <div>
+          <p className="text-gray-500 text-sm mb-1">{label}</p>
+          <h2 className="text-3xl font-bold text-gray-800">{value}</h2>
+        </div>
       </div>
     </div>
   );
