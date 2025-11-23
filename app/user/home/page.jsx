@@ -9,41 +9,43 @@ export default function HomePage() {
   const [buku, setBuku] = useState([]);
   const [wishlist, setWishlist] = useState([]);
 
-  // Load data buku
+  // Ambil data buku (WAJIB no-store & revalidate: 0)
+  const fetchBuku = async () => {
+    try {
+      const res = await fetch("/api/buku", {
+        cache: "no-store",
+        next: { revalidate: 0 },
+      });
+
+      const data = await res.json();
+      setBuku(data);
+    } catch (error) {
+      console.error("Gagal fetch buku:", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchBuku = async () => {
-      try {
-        const res = await fetch("/api/buku", { cache: "no-store" });
-        const data = await res.json();
-        setBuku(data);
-      } catch (error) {
-        console.error("Gagal fetch buku:", error);
-      }
-    };
     fetchBuku();
   }, []);
 
-  // Load wishlist dari localStorage
+  // Wishlist
   useEffect(() => {
     const saved = localStorage.getItem("wishlist");
     if (saved) setWishlist(JSON.parse(saved));
   }, []);
 
-  // Simpan wishlist ke localStorage
   const saveWishlist = (data) => {
     setWishlist(data);
     localStorage.setItem("wishlist", JSON.stringify(data));
   };
 
-  // Tambah ke wishlist
   const addToWishlist = (item) => {
     const already = wishlist.find((x) => x.id_buku === item.id_buku);
-    if (already) return; // Biar tidak double
+    if (already) return;
 
     const newList = [...wishlist, item];
     saveWishlist(newList);
 
-    // Arahkan ke halaman wishlist
     window.location.href = "/user/wishlist";
   };
 
@@ -66,9 +68,7 @@ export default function HomePage() {
                     src={item.gambar}
                     alt={item.judul}
                     className="object-contain h-full p-2"
-                    onError={(e) => {
-                      e.target.src = "/no-image.jpg";
-                    }}
+                    onError={(e) => (e.target.src = "/no-image.jpg")}
                   />
                 ) : (
                   <Image
@@ -77,9 +77,7 @@ export default function HomePage() {
                     width={150}
                     height={200}
                     className="object-contain h-full p-2"
-                    onError={(e) => {
-                      e.target.src = "/no-image.jpg";
-                    }}
+                    onError={(e) => (e.target.src = "/no-image.jpg")}
                   />
                 )}
               </div>
@@ -95,7 +93,6 @@ export default function HomePage() {
                   </button>
                 </Link>
 
-                {/* Tombol Love */}
                 <button
                   onClick={() => addToWishlist(item)}
                   className="p-2 rounded-lg border border-red-500 text-red-500 hover:bg-red-500 hover:text-white transition"

@@ -83,7 +83,7 @@ export async function PUT(req, context) {
 // =======================
 export async function DELETE(req, context) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const deleteQuery = `DELETE FROM buku WHERE id_buku = ?`;
 

@@ -16,7 +16,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { name: "Wishlist", icon: <Heart size={26} />, path: "/user/wishlist" },
 
     { name: "Peminjaman", icon: <BookmarkCheck size={26} />, path: "/user/daftarpinjam" },
-    { name: "Pengembalian", icon: <RotateCcw size={26} />, path: "/Layout/User/Pengembalian" },
   ];
 
   // 🔹 Logout redirect
