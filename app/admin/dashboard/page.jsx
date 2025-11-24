@@ -32,19 +32,21 @@ export default function Dashboard() {
       const peminjamanRes = await fetch("/api/peminjaman");
       const peminjaman = peminjamanRes.ok ? await peminjamanRes.json() : [];
 
-      // FIXED — hitung dipinjam dari "Dipinjam" BUKAN status awal
-      const dipinjamCount = peminjaman.filter(p => p.status === "Dipinjam").length;
+      // hitung dipinjam dari status "Dipinjam"
+      const dipinjamCount = Array.isArray(peminjaman)
+        ? peminjaman.filter((p) => p.status === "Dipinjam").length
+        : 0;
 
-      const tersediaCount = buku.length - dipinjamCount;
+      const tersediaCount = Array.isArray(buku) ? buku.length - dipinjamCount : 0;
 
       setStatistik({
-        totalBuku: buku.length,
-        totalKategori: kategori.length,
+        totalBuku: Array.isArray(buku) ? buku.length : 0,
+        totalKategori: Array.isArray(kategori) ? kategori.length : 0,
         dipinjam: dipinjamCount,
         tersedia: tersediaCount,
       });
     } catch (error) {
-      console.error("Gagal fetch statistik:", error);
+      console.error("Gagal fetch statistik", error);
     }
   }
 
@@ -53,12 +55,14 @@ export default function Dashboard() {
   // ========================
   async function fetchPeminjaman() {
     try {
+      setLoading(true);
       const res = await fetch("/api/peminjaman");
       const data = res.ok ? await res.json() : [];
-      setPeminjaman(data);
-      setLoading(false);
+      setPeminjaman(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Gagal fetch peminjaman:", error);
+      console.error("Gagal fetch peminjaman", error);
+      setPeminjaman([]);
+    } finally {
       setLoading(false);
     }
   }
@@ -76,14 +80,20 @@ export default function Dashboard() {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal update status");
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        console.error("Server error:", data);
+        alert(data.error || "Gagal update status");
+        return;
+      }
 
       alert("Status berhasil diupdate!");
+      // refresh data
       fetchPeminjaman();
       fetchStatistik();
     } catch (error) {
-      console.error(error);
+      console.error("Error updateStatus:", error);
       alert("Gagal update status!");
     }
   }
@@ -91,7 +101,10 @@ export default function Dashboard() {
   // Format tanggal
   const formatTanggal = (tanggal) => {
     if (!tanggal) return "-";
-    return new Date(tanggal).toLocaleDateString("id-ID", {
+    // support string date or ISO
+    const d = new Date(tanggal);
+    if (isNaN(d)) return "-";
+    return d.toLocaleDateString("id-ID", {
       day: "2-digit",
       month: "long",
       year: "numeric",
@@ -109,30 +122,10 @@ export default function Dashboard() {
 
         {/* Statistik Card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card 
-            icon={<Book size={32} />} 
-            color="blue" 
-            label="Total Buku" 
-            value={statistik.totalBuku} 
-          />
-          <Card 
-            icon={<Layers size={32} />} 
-            color="purple" 
-            label="Total Kategori" 
-            value={statistik.totalKategori} 
-          />
-          <Card 
-            icon={<BookmarkCheck size={32} />} 
-            color="orange" 
-            label="Sedang Dipinjam" 
-            value={statistik.dipinjam} 
-          />
-          <Card 
-            icon={<CheckCircle size={32} />} 
-            color="green" 
-            label="Buku Tersedia" 
-            value={statistik.tersedia} 
-          />
+          <Card icon={<Book size={32} />} color="blue" label="Total Buku" value={statistik.totalBuku} />
+          <Card icon={<Layers size={32} />} color="purple" label="Total Kategori" value={statistik.totalKategori} />
+          <Card icon={<BookmarkCheck size={32} />} color="orange" label="Sedang Dipinjam" value={statistik.dipinjam} />
+          <Card icon={<CheckCircle size={32} />} color="green" label="Buku Tersedia" value={statistik.tersedia} />
         </div>
 
         {/* Tabel Peminjaman */}
@@ -159,80 +152,50 @@ export default function Dashboard() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b-2 border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      No
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Nama Siswa
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Kelas
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Buku
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Tgl Pinjam
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Tgl Kembali
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
-                      Aksi
-                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nama Siswa</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Kelas</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Buku</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tgl Pinjam</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tgl Kembali</th>
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {peminjaman.map((item, index) => (
                     <tr key={item.id_pinjam} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {index + 1}
-                      </td>
-                      
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{item.nama}</div>
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                           {item.kelas}
                         </span>
                       </td>
-                      
+
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <img
-                            src={
-                              item.gambar_buku?.startsWith("http")
-                                ? item.gambar_buku
-                                : `/buku/${item.gambar_buku}`
-                            }
+                            src={item.gambar_buku?.startsWith("http") ? item.gambar_buku : `/buku/${item.gambar_buku}`}
                             alt={item.judul_buku}
                             className="w-12 h-16 object-cover rounded shadow-sm"
-                            onError={(e) => {
-                              e.target.src = "/no-image.jpg";
-                            }}
+                            onError={(e) => { e.target.src = "/no-image.jpg"; }}
                           />
                           <div className="max-w-xs">
-                            <div className="text-sm font-medium text-gray-900 line-clamp-2">
-                              {item.judul_buku}
-                            </div>
+                            <div className="text-sm font-medium text-gray-900 line-clamp-2">{item.judul_buku}</div>
                             <div className="text-xs text-gray-500">{item.pengarang}</div>
                           </div>
                         </div>
                       </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatTanggal(item.tgl_pinjam)}
-                      </td>
-                      
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatTanggal(item.tgl_kembali)}
-                      </td>
-                      
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTanggal(item.tgl_pinjam)}</td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTanggal(item.tgl_kembali)}</td>
+
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${
@@ -248,7 +211,7 @@ export default function Dashboard() {
                           {item.status}
                         </span>
                       </td>
-                      
+
                       <td className="px-6 py-4 whitespace-nowrap text-center">
                         <div className="flex justify-center gap-2">
                           {item.status === "Proses" && (
@@ -269,14 +232,14 @@ export default function Dashboard() {
                               </button>
                             </>
                           )}
-
-                          {item.status === "Dipinjam" && (
+                          {/* Menunggu Proses -> Konfirmasi */}
+                          {item.status === "Menunggu Proses" && (
                             <button
                               onClick={() => updateStatus(item.id_pinjam, "Dikembalikan")}
                               className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm"
                               title="Konfirmasi Pengembalian"
                             >
-                              Kembalikan
+                              Konfirmasi
                             </button>
                           )}
 
@@ -302,18 +265,16 @@ export default function Dashboard() {
 // ========================
 function Card({ icon, color, label, value }) {
   const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600',
-    green: 'bg-green-100 text-green-600'
+    blue: "bg-blue-100 text-blue-600",
+    purple: "bg-purple-100 text-purple-600",
+    orange: "bg-orange-100 text-orange-600",
+    green: "bg-green-100 text-green-600",
   };
 
   return (
     <div className="bg-white p-6 shadow-lg rounded-xl border border-gray-100 hover:shadow-xl transition-all duration-200">
       <div className="flex items-center gap-4">
-        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
-          {icon}
-        </div>
+        <div className={`p-3 rounded-lg ${colorClasses[color]}`}>{icon}</div>
         <div>
           <p className="text-gray-500 text-sm mb-1">{label}</p>
           <h2 className="text-3xl font-bold text-gray-800">{value}</h2>

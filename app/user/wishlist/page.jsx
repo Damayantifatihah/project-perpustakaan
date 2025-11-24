@@ -22,7 +22,7 @@ export default function WishlistPage() {
   };
 
   return (
-    <div className="min-h-screen bg-green-50 p-6 text-gray-800">
+    <div className="min-h-screen from-blue-50 p-6 text-gray-800">
       <h2 className="text-2xl font-semibold text-[#0a4e75] mb-6">
         Wishlist Saya
       </h2>

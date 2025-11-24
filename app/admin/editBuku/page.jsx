@@ -139,19 +139,19 @@ export default function EditBuku() {
               <div className="lg:col-span-1 bg-gradient-to-br from-[#0a4e75] to-[#093d5a] p-8 flex flex-col items-center justify-center">
                 <div className="w-full max-w-xs">
                   <div className="bg-white rounded-xl shadow-2xl p-4 mb-4">
-                    <Image
-                      src={
-                        book.gambar?.startsWith("http")
+                  <img
+                    src={
+                      book.gambar
+                        ? book.gambar.startsWith("http")
                           ? book.gambar
-                          : book.gambar
-                          ? `/buku/${book.gambar}`
-                          : "/no-image.png"
-                      }
-                      alt={book.judul || "Cover Buku"}
-                      width={250}
-                      height={350}
-                      className="rounded-lg object-cover w-full h-80"
-                    />
+                          : `/buku/${book.gambar}`
+                        : "/no-image.jpg"
+                    }
+                    alt={book.judul}
+                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition"
+                    onError={(e) => (e.target.src = "/no-image.jpg")}
+                  />
+
                   </div>
                   <div className="text-center text-white">
                     <p className="text-sm opacity-90">Cover Buku</p>

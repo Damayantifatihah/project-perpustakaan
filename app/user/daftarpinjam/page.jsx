@@ -7,33 +7,26 @@ export default function DaftarPinjam() {
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Ambil username user yang sedang login
   useEffect(() => {
     if (typeof window !== "undefined") {
       const username = localStorage.getItem("username");
       if (username) {
         setCurrentUser(username);
       } else {
-        console.warn("Current user belum tersedia di localStorage!");
         setLoading(false);
       }
     }
   }, []);
 
-  // Load data peminjaman sesuai user
   async function loadData() {
     setLoading(true);
     try {
       const res = await fetch("/api/peminjaman");
-      if (!res.ok) throw new Error("Gagal fetch data peminjaman");
-
       const json = await res.json();
-      console.log("Data dari API:", json);
 
       const userData = Array.isArray(json)
         ? json.filter((item) => item.nama === currentUser)
         : [];
-      console.log("Data user saat ini:", userData);
 
       setData(userData);
     } catch (err) {
@@ -44,7 +37,6 @@ export default function DaftarPinjam() {
     }
   }
 
-  // Fetch data setiap kali currentUser siap
   useEffect(() => {
     if (currentUser) loadData();
   }, [currentUser]);
@@ -64,23 +56,15 @@ export default function DaftarPinjam() {
     }
   };
 
-  // ========================
-  //   FORMAT TANGGAL
-  // ========================
   function formatTanggal(input) {
     if (!input) return "-";
 
     let date = null;
 
-    // Format DD/MM/YYYY
     if (input.includes("/")) {
       const parts = input.split("/");
-      if (parts.length === 3) {
-        date = new Date(parts[2], parts[1] - 1, parts[0]);
-      }
-    }
-    // Format YYYY-MM-DD
-    else if (input.includes("-")) {
+      date = new Date(parts[2], parts[1] - 1, parts[0]);
+    } else if (input.includes("-")) {
       date = new Date(input);
     }
 
@@ -115,9 +99,6 @@ export default function DaftarPinjam() {
     });
   }
 
-  // ========================
-  //   HANDLE PENGEMBALIAN
-  // ========================
   async function handleKembalikan(id_pinjam) {
     try {
       const res = await fetch(`/api/peminjaman/${id_pinjam}`, {
@@ -131,16 +112,15 @@ export default function DaftarPinjam() {
         return;
       }
 
-      alert("Permintaan pengembalian dikirim! Menunggu admin memproses.");
+      alert("Permintaan pengembalian dikirim!");
       loadData();
     } catch (error) {
       console.error("PATCH ERROR:", error);
-      alert("Terjadi kesalahan.");
     }
   }
 
   return (
-    <div className="w-full px-6 py-6 flex justify-center">
+    <div className="w-full from-blue-50 px-6 py-6 flex justify-center">
       <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
         <h1 className="text-2xl font-bold text-[#0A4E75] mb-6">
           Daftar Peminjaman

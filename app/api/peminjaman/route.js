@@ -10,13 +10,11 @@ export async function POST(req) {
       nama,
       telepon,
       kelas,
-      tanggalPinjam,
-      tanggalKembali,
-      judulBuku,
-      bukuId,
+      tgl_pinjam,
+      tgl_kembali,
+      judul_buku,
+      id_buku,
     } = await req.json();
-
-    
 
     const query = `
       INSERT INTO peminjaman 
@@ -28,10 +26,10 @@ export async function POST(req) {
       nama,
       telepon,
       kelas,
-      tanggalPinjam,
-      tanggalKembali,
-      judulBuku,
-      bukuId,
+      tgl_pinjam,
+      tgl_kembali,
+      judul_buku,
+      id_buku,
     ];
 
     const [result] = await pool.query(query, values);

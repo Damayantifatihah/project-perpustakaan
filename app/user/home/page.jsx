@@ -7,9 +7,11 @@ import { Heart } from "lucide-react";
 
 export default function HomePage() {
   const [buku, setBuku] = useState([]);
+  const [filtered, setFiltered] = useState([]);
   const [wishlist, setWishlist] = useState([]);
+  const [search, setSearch] = useState("");
 
-  // Ambil data buku (WAJIB no-store & revalidate: 0)
+  // Ambil data buku
   const fetchBuku = async () => {
     try {
       const res = await fetch("/api/buku", {
@@ -19,6 +21,7 @@ export default function HomePage() {
 
       const data = await res.json();
       setBuku(data);
+      setFiltered(data); // default
     } catch (error) {
       console.error("Gagal fetch buku:", error);
     }
@@ -27,6 +30,14 @@ export default function HomePage() {
   useEffect(() => {
     fetchBuku();
   }, []);
+
+  // Filter buku berdasarkan search
+  useEffect(() => {
+    const hasil = buku.filter((item) =>
+      item.judul.toLowerCase().includes(search.toLowerCase())
+    );
+    setFiltered(hasil);
+  }, [search, buku]);
 
   // Wishlist
   useEffect(() => {
@@ -50,14 +61,25 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-green-50 text-gray-800">
+    <div className="flex min-h-screen from-blue-50 text-gray-800">
       <main className="flex-1 p-6">
-        <h2 className="text-2xl font-semibold text-[#0a4e75] mb-6">
+        <h2 className="text-2xl font-semibold text-[#0a4e75] mb-4">
           Daftar Buku
         </h2>
 
+        {/* 🔍 Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Cari judul buku..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:outline-none"
+          />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-8">
-          {buku.map((item) => (
+          {filtered.map((item) => (
             <div
               key={item.id_buku}
               className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition p-4"

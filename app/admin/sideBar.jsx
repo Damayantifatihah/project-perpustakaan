@@ -42,7 +42,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
       {isOpen && (
         <div className="flex items-center gap-5 px-7 py-6 border-b border-gray-100">
           <Image
-            src="/profil.png"
+            src="/admin.png"
             alt="Admin"
             width={55}
             height={55}

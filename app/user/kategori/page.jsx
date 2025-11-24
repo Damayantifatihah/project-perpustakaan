@@ -25,7 +25,7 @@ export default function Kategori() {
   );
 
   return (
-    <div className="p-10 bg-white min-h-screen">
+    <div className="p-10 from-blue-50 min-h-screen">
       <h2 className="text-2xl font-semibold text-[#0a4e75] mb-6">Kategori</h2>
 
       {/* Tombol kategori */}

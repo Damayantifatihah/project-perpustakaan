@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { BookOpen, Plus, Edit, Search, Trash2 } from "lucide-react";
-import Link from "next/link";
 
 export default function KelolaBuku() {
   const [buku, setBuku] = useState([]);
@@ -11,9 +10,11 @@ export default function KelolaBuku() {
 
   const [form, setForm] = useState({
     judul: "",
-    pengarang: "", // ← FIX
-    tahun_terbit: "", // ← FIX
+    pengarang: "",
+    penerbit: "",
+    tahun_terbit: "",
     kategori: "",
+    stok: "",
     gambar: "",
   });
 
@@ -40,9 +41,11 @@ export default function KelolaBuku() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         judul: form.judul,
-        pengarang: form.pengarang, // FIX
-        tahun_terbit: form.tahun_terbit, // FIX
+        pengarang: form.pengarang,
+        penerbit: form.penerbit,
+        tahun_terbit: form.tahun_terbit,
         kategori: form.kategori,
+        stok: form.stok,
         gambar: form.gambar,
       }),
     });
@@ -53,8 +56,10 @@ export default function KelolaBuku() {
       setForm({
         judul: "",
         pengarang: "",
+        penerbit: "",
         tahun_terbit: "",
         kategori: "",
+        stok: "",
         gambar: "",
       });
 
@@ -76,8 +81,6 @@ export default function KelolaBuku() {
 
       if (res.ok) {
         alert("Buku berhasil dihapus!");
-
-        // CUKUP FETCH ULANG AGAR DATA REALTIME
         getBuku();
       } else {
         alert("Gagal menghapus buku");
@@ -92,6 +95,7 @@ export default function KelolaBuku() {
   const filteredBuku = buku.filter((item) =>
     item.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.pengarang?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.penerbit?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.kategori?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -147,6 +151,19 @@ export default function KelolaBuku() {
                 />
               </div>
 
+              {/* Penerbit */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Penerbit
+                </label>
+                <input
+                  type="text"
+                  className="w-full border-2 text-black border-gray-200 p-3 rounded-lg focus:border-indigo-500"
+                  value={form.penerbit}
+                  onChange={(e) => setForm({ ...form, penerbit: e.target.value })}
+                />
+              </div>
+
               {/* Tahun */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -172,6 +189,19 @@ export default function KelolaBuku() {
                   onChange={(e) => setForm({ ...form, kategori: e.target.value })}
                 />
               </div>
+
+              {/* Stok */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Stok
+                </label>
+                <input
+                  type="number"
+                  className="w-full border-2 text-black border-gray-200 p-3 rounded-lg focus:border-indigo-500"
+                  value={form.stok}
+                  onChange={(e) => setForm({ ...form, stok: e.target.value })}
+                />
+              </div>
             </div>
 
             {/* Gambar */}
@@ -189,7 +219,7 @@ export default function KelolaBuku() {
 
             <button
               onClick={handleSubmit}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold shadow-lg hover:shadow-xl transition"
             >
               Simpan Buku
             </button>
@@ -203,7 +233,7 @@ export default function KelolaBuku() {
             <input
               type="text"
               placeholder="Cari buku..."
-              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg text-black bg-white"
+              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg text-black bg-white focus:border-indigo-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -236,7 +266,7 @@ export default function KelolaBuku() {
             {filteredBuku.map((item) => (
               <div
                 key={item.id_buku}
-                className="bg-white rounded-xl shadow-lg overflow-hidden border group flex flex-col"
+                className="bg-white rounded-xl shadow-lg overflow-hidden border group flex flex-col hover:shadow-2xl transition"
               >
                 <div className="relative h-80 bg-gray-100">
                   <img
@@ -254,13 +284,17 @@ export default function KelolaBuku() {
 
                   <button
                     onClick={() => handleDelete(item.id_buku, item.judul)}
-                    className="absolute top-3 left-3 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100"
+                    className="absolute top-3 left-3 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition hover:bg-red-600"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
 
                   <div className="absolute top-3 right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
                     {item.kategori}
+                  </div>
+
+                  <div className="absolute bottom-3 right-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    Stok: {item.stok || 0}
                   </div>
                 </div>
 
@@ -271,21 +305,26 @@ export default function KelolaBuku() {
 
                   <p className="text-sm text-gray-600">
                     <span className="font-semibold">Pengarang:</span>{" "}
-                    {item.pengarang}
+                    {item.pengarang || "-"}
+                  </p>
+
+                  <p className="text-sm text-gray-600">
+                    <span className="font-semibold">Penerbit:</span>{" "}
+                    {item.penerbit || "-"}
                   </p>
 
                   <p className="text-sm text-gray-600 mb-4">
                     <span className="font-semibold">Tahun:</span>{" "}
-                    {item.tahun_terbit}
+                    {item.tahun_terbit || "-"}
                   </p>
 
-                  <Link
+                  <a
                     href={`/admin/editBuku?id=${item.id_buku}`}
-                    className="mt-auto bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg font-semibold shadow-md text-center"
+                    className="mt-auto bg-gradient-to-r from-yellow-400 to-orange-500 text-white py-3 rounded-lg font-semibold shadow-md text-center hover:shadow-lg transition"
                   >
                     <Edit className="w-4 h-4 inline-block mr-2" />
                     Edit Buku
-                  </Link>
+                  </a>
                 </div>
               </div>
             ))}
