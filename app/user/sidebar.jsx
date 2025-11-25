@@ -1,25 +1,33 @@
 "use client";
-import { Home, Layers, Heart, BookmarkCheck, RotateCcw, LogOut } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Home, Layers, Heart, BookmarkCheck, LogOut } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation"; // 🔹 DITAMBAH
+import { usePathname, useRouter } from "next/navigation";
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const pathname = usePathname();
-  const router = useRouter(); // 🔹 DITAMBAH
+  const router = useRouter();
+
+  const [user, setUser] = useState(null);
+
+  // Ambil user dari localStorage
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   const menus = [
     { name: "Beranda", icon: <Home size={26} />, path: "/user/home" },
     { name: "Kategori", icon: <Layers size={26} />, path: "/user/kategori" },
-
-
     { name: "Wishlist", icon: <Heart size={26} />, path: "/user/wishlist" },
-
     { name: "Peminjaman", icon: <BookmarkCheck size={26} />, path: "/user/daftarpinjam" },
   ];
 
-  // 🔹 Logout redirect
   const handleLogout = () => {
+    localStorage.removeItem("user");
     router.push("/");
   };
 
@@ -29,16 +37,14 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         isOpen ? "w-72" : "w-24"
       }`}
     >
-      {/* Logo — bisa diklik */}
+      {/* Logo */}
       <div
         className="flex items-center gap-5 px-7 py-8 border-b border-gray-100 cursor-pointer"
         onClick={toggleSidebar}
       >
         <Image src="/logo.png" alt="Logo Starbhak Library" width={55} height={55} />
         {isOpen && (
-          <div>
-            <h1 className="text-xl font-semibold text-[#0a4e75] leading-tight">LitSpace</h1>
-          </div>
+          <h1 className="text-xl font-semibold text-[#0a4e75] leading-tight">LitSpace</h1>
         )}
       </div>
 
@@ -53,10 +59,13 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             className="rounded-full object-cover"
           />
           <div>
-            <p className="font-semibold text-lg text-[#0a4e75]">Taylor Swift 
-              <br />XI RPL 5
+            <p className="font-semibold text-lg text-[#0a4e75]">
+              {user?.namaLengkap || "Loading..."}
+              <br />
+              {user?.kelasJurusan || "-"}
             </p>
-            <p className="text-green-600 text-1g font-bold"> ● SISWA</p>
+
+            <p className="text-green-600 font-bold"> ● SISWA</p>
           </div>
         </div>
       )}

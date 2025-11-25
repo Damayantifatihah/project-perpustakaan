@@ -16,12 +16,10 @@ export default function RegisterPage() {
   });
   const [loading, setLoading] = useState(false);
 
-  // update input form
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -47,6 +45,17 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (res.ok) {
+        // SIMPAN USER KE LOCALSTORAGE
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            nama: formData.namaLengkap,
+            kelas: formData.kelasJurusan,
+            email: formData.email,
+            telepon: formData.telepon,
+          })
+        );
+
         alert("Registrasi berhasil!");
         router.push("/user/home");
       } else {
@@ -62,7 +71,6 @@ export default function RegisterPage() {
 
   return (
     <div className="flex h-screen">
-      {/* LEFT SIDE */}
       <div className="w-1/2 bg-[#083A6F] flex items-center justify-center">
         <Image
           src="/icon hp.png"
@@ -73,7 +81,6 @@ export default function RegisterPage() {
         />
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="w-1/2 flex flex-col items-center justify-center bg-white px-10">
         <h2 className="text-[#083A6F] text-2xl font-semibold mb-6">
           Welcome to Starbhak Library!
@@ -92,6 +99,7 @@ export default function RegisterPage() {
             className="w-full px-4 py-3 border border-[#083A6F] rounded-md focus:ring-2 focus:ring-[#083A6F] text-[#083A6F]"
             required
           />
+
           <input
             type="email"
             name="email"
@@ -101,6 +109,7 @@ export default function RegisterPage() {
             className="w-full px-4 py-3 border border-[#083A6F] rounded-md focus:ring-2 focus:ring-[#083A6F] text-[#083A6F]"
             required
           />
+
           <input
             type="text"
             name="kelasJurusan"
@@ -109,6 +118,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full px-4 py-3 border border-[#083A6F] rounded-md focus:ring-2 focus:ring-[#083A6F] text-[#083A6F]"
           />
+
           <input
             type="text"
             name="telepon"
@@ -117,6 +127,7 @@ export default function RegisterPage() {
             onChange={handleChange}
             className="w-full px-4 py-3 border border-[#083A6F] rounded-md focus:ring-2 focus:ring-[#083A6F] text-[#083A6F]"
           />
+
           <input
             type="password"
             name="password"
@@ -126,6 +137,7 @@ export default function RegisterPage() {
             className="w-full px-4 py-3 border border-[#083A6F] rounded-md focus:ring-2 focus:ring-[#083A6F] text-[#083A6F]"
             required
           />
+
           <input
             type="password"
             name="confirmPassword"

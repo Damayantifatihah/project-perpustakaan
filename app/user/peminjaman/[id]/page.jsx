@@ -26,6 +26,21 @@ export default function PeminjamanPage() {
   const [tanggalPinjam, setTanggalPinjam] = useState("");
   const [tanggalKembali, setTanggalKembali] = useState("");
 
+  // ===============================================
+  //  AUTO ISI DATA USER DARI LOCAL STORAGE
+  // ===============================================
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (user) {
+      const u = JSON.parse(user);
+
+      setNama(u.namaLengkap || "");
+      setTelepon(u.telepon || "");
+      setKelas(u.kelasJurusan || "");
+    }
+  }, []);
+  // ===============================================
+
   // Fetch detail buku
   useEffect(() => {
     async function fetchDetail() {
@@ -56,7 +71,7 @@ export default function PeminjamanPage() {
     fetchDetail();
   }, [id]);
 
-  // AUTO HITUNG — Logic lama (H+7)
+  // AUTO HITUNG — Logic lama
   const handleTanggalPinjam = (value) => {
     setTanggalPinjam(value);
 
@@ -72,14 +87,13 @@ export default function PeminjamanPage() {
     }
   };
 
-  // SUBMIT — Logic lama (pasti kirim tgl_kembali)
+  // SUBMIT
   const handleSubmit = async () => {
     if (!nama || !telepon || !kelas || !tanggalPinjam) {
       alert("Harap lengkapi semua data!");
       return;
     }
 
-    // FIX: kalo user ga pilih tanggal kembali → AUTO H+7
     const finalTanggalKembali =
       tanggalKembali && tanggalKembali.trim() !== ""
         ? tanggalKembali
@@ -92,7 +106,7 @@ export default function PeminjamanPage() {
       telepon,
       kelas,
       tgl_pinjam: tanggalPinjam,
-      tgl_kembali: finalTanggalKembali, // FIX HERE
+      tgl_kembali: finalTanggalKembali,
       judul_buku: buku.judul,
       id_buku: buku.id_buku,
       status: "Menunggu Proses",
@@ -160,7 +174,6 @@ export default function PeminjamanPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* DETAIL BUKU */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-6">
               <div className="text-center mb-4">
@@ -247,7 +260,6 @@ export default function PeminjamanPage() {
               </h2>
 
               <div className="space-y-6">
-                {/* Nama */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     <User className="w-4 h-4 inline-block mr-2" />
@@ -257,12 +269,11 @@ export default function PeminjamanPage() {
                     type="text"
                     required
                     value={nama}
-                    onChange={(e) => setNama(e.target.value)}
+                    readOnly
                     className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
                   />
                 </div>
 
-                {/* Telepon */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     <Phone className="w-4 h-4 inline-block mr-2" />
@@ -272,12 +283,11 @@ export default function PeminjamanPage() {
                     type="tel"
                     required
                     value={telepon}
-                    onChange={(e) => setTelepon(e.target.value)}
+                    readOnly
                     className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
                   />
                 </div>
 
-                {/* Kelas */}
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">
                     <GraduationCap className="w-4 h-4 inline-block mr-2" />
@@ -287,12 +297,11 @@ export default function PeminjamanPage() {
                     type="text"
                     required
                     value={kelas}
-                    onChange={(e) => setKelas(e.target.value)}
+                    readOnly
                     className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
                   />
                 </div>
 
-                {/* Tanggal */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
@@ -325,7 +334,6 @@ export default function PeminjamanPage() {
                   </div>
                 </div>
 
-                {/* Info */}
                 <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
                   <div className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
@@ -340,7 +348,6 @@ export default function PeminjamanPage() {
                   </div>
                 </div>
 
-                {/* Submit */}
                 <button
                   onClick={handleSubmit}
                   className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition"

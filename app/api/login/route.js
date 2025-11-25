@@ -6,6 +6,7 @@ export async function POST(req) {
   try {
     const { email, password } = await req.json();
 
+    // Validasi input
     if (!email || !password) {
       return NextResponse.json(
         { error: "Email dan password wajib diisi!" },
@@ -13,6 +14,7 @@ export async function POST(req) {
       );
     }
 
+    // Cek user berdasarkan email
     const [rows] = await pool.query(
       "SELECT * FROM users WHERE email = ?",
       [email]
@@ -26,6 +28,8 @@ export async function POST(req) {
     }
 
     const user = rows[0];
+
+    // Cek password
     const validPassword = await bcrypt.compare(password, user.password);
 
     if (!validPassword) {
@@ -35,13 +39,16 @@ export async function POST(req) {
       );
     }
 
+    // Kirim data user lengkap ke FE
     return NextResponse.json({
       message: "Login berhasil!",
       user: {
         id: user.id,
-        nama: user.namaLengkap,
+        namaLengkap: user.namaLengkap || "",
+        kelasJurusan: user.kelasJurusan || "",
+        telepon: user.telepon || "",
         email: user.email,
-        role: user.role,
+        role: user.role || "siswa",
       },
     });
 

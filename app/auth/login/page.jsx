@@ -6,18 +6,26 @@ import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ email: "", password: "" });
+
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      setLoading(true);
       const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -27,13 +35,16 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (res.ok) {
+        // SIMPAN USER KE LOCALSTORAGE
+        localStorage.setItem("user", JSON.stringify(data.user));
+
         alert("Login berhasil!");
-        router.push("/user/home"); // pindah ke dashboard user
+        router.push("/user/home");
       } else {
         alert(data.error || "Login gagal");
       }
     } catch (err) {
-      console.error(err);
+      console.error("LOGIN ERROR:", err);
       alert("Terjadi kesalahan server");
     } finally {
       setLoading(false);
@@ -94,7 +105,10 @@ export default function LoginPage() {
 
         <p className="mt-6 text-sm text-[#083A6F]">
           Belum punya akun?{" "}
-          <a href="/auth/register" className="font-semibold underline hover:text-[#0A4B9A]">
+          <a
+            href="/auth/register"
+            className="font-semibold underline hover:text-[#0A4B9A]"
+          >
             Register di sini
           </a>
         </p>
