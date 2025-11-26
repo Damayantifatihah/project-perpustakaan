@@ -6,10 +6,11 @@ import { useEffect, useState } from "react";
 export default function Dashboard() {
   const [statistik, setStatistik] = useState({
     totalBuku: 0,
-    totalKategori: 0,
+    totalKategori: 0, // dipakai untuk total dikembalikan
     dipinjam: 0,
     tersedia: 0,
   });
+
   const [peminjaman, setPeminjaman] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,25 +24,33 @@ export default function Dashboard() {
   // ========================
   async function fetchStatistik() {
     try {
+      // Fetch buku
       const bukuRes = await fetch("/api/buku");
       const buku = bukuRes.ok ? await bukuRes.json() : [];
 
-      const kategoriRes = await fetch("/api/kategori");
-      const kategori = kategoriRes.ok ? await kategoriRes.json() : [];
-
+      // Fetch peminjaman
       const peminjamanRes = await fetch("/api/peminjaman");
-      const peminjaman = peminjamanRes.ok ? await peminjamanRes.json() : [];
+      const peminjamanData = peminjamanRes.ok ? await peminjamanRes.json() : [];
 
-      // hitung dipinjam dari status "Dipinjam"
-      const dipinjamCount = Array.isArray(peminjaman)
-        ? peminjaman.filter((p) => p.status === "Dipinjam").length
+      // Hitung dipinjam
+      const dipinjamCount = Array.isArray(peminjamanData)
+        ? peminjamanData.filter((p) => p.status === "Dipinjam").length
         : 0;
 
-      const tersediaCount = Array.isArray(buku) ? buku.length - dipinjamCount : 0;
+      // Hitung dikembalikan
+      const dikembalikanCount = Array.isArray(peminjamanData)
+        ? peminjamanData.filter((p) => p.status === "Dikembalikan").length
+        : 0;
 
+      // Hitung tersedia
+      const tersediaCount = Array.isArray(buku)
+        ? buku.length - dipinjamCount
+        : 0;
+
+      // Set statistik
       setStatistik({
         totalBuku: Array.isArray(buku) ? buku.length : 0,
-        totalKategori: Array.isArray(kategori) ? kategori.length : 0,
+        totalKategori: dikembalikanCount,   // ← sekarang menampilkan total dikembalikan
         dipinjam: dipinjamCount,
         tersedia: tersediaCount,
       });
@@ -89,7 +98,7 @@ export default function Dashboard() {
       }
 
       alert("Status berhasil diupdate!");
-      // refresh data
+
       fetchPeminjaman();
       fetchStatistik();
     } catch (error) {
@@ -101,7 +110,6 @@ export default function Dashboard() {
   // Format tanggal
   const formatTanggal = (tanggal) => {
     if (!tanggal) return "-";
-    // support string date or ISO
     const d = new Date(tanggal);
     if (isNaN(d)) return "-";
     return d.toLocaleDateString("id-ID", {
@@ -123,7 +131,7 @@ export default function Dashboard() {
         {/* Statistik Card */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card icon={<Book size={32} />} color="blue" label="Total Buku" value={statistik.totalBuku} />
-          <Card icon={<Layers size={32} />} color="purple" label="Total Kategori" value={statistik.totalKategori} />
+          <Card icon={<Layers size={32} />} color="purple" label="Sudah Dikembalikan" value={statistik.totalKategori} />
           <Card icon={<BookmarkCheck size={32} />} color="orange" label="Sedang Dipinjam" value={statistik.dipinjam} />
           <Card icon={<CheckCircle size={32} />} color="green" label="Buku Tersedia" value={statistik.tersedia} />
         </div>
@@ -155,6 +163,10 @@ export default function Dashboard() {
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nama Siswa</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Kelas</th>
+
+                    {/* ➕ TELEPON BARU */}
+                    <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Telepon</th>
+
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Buku</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tgl Pinjam</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tgl Kembali</th>
@@ -162,6 +174,7 @@ export default function Dashboard() {
                     <th className="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Aksi</th>
                   </tr>
                 </thead>
+
                 <tbody className="divide-y divide-gray-200">
                   {peminjaman.map((item, index) => (
                     <tr key={item.id_pinjam} className="hover:bg-gray-50 transition-colors">
@@ -175,6 +188,11 @@ export default function Dashboard() {
                         <span className="px-3 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
                           {item.kelas}
                         </span>
+                      </td>
+
+                      {/* ➕ TELEPON BARU */}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {item.telepon || "-"}
                       </td>
 
                       <td className="px-6 py-4">
@@ -219,25 +237,22 @@ export default function Dashboard() {
                               <button
                                 onClick={() => updateStatus(item.id_pinjam, "Dipinjam")}
                                 className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
-                                title="Setujui Peminjaman"
                               >
                                 Setujui
                               </button>
                               <button
                                 onClick={() => updateStatus(item.id_pinjam, "Ditolak")}
                                 className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
-                                title="Tolak Peminjaman"
                               >
                                 Tolak
                               </button>
                             </>
                           )}
-                          {/* Menunggu Proses -> Konfirmasi */}
+
                           {item.status === "Menunggu Proses" && (
                             <button
                               onClick={() => updateStatus(item.id_pinjam, "Dikembalikan")}
                               className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm"
-                              title="Konfirmasi Pengembalian"
                             >
                               Konfirmasi
                             </button>
@@ -252,6 +267,7 @@ export default function Dashboard() {
                   ))}
                 </tbody>
               </table>
+
             </div>
           )}
         </div>

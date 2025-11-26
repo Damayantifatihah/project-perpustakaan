@@ -24,6 +24,13 @@ export default function Kategori() {
     (book) => book.kategori === selectedCategory
   );
 
+  // Fungsi untuk mengambil gambar (eksternal / internal)
+  const getImageSrc = (gambar) => {
+    if (!gambar) return "/no-image.png";
+    if (gambar.startsWith("http")) return gambar; // eksternal url
+    return `/buku/${gambar}`; // internal upload
+  };
+
   return (
     <div className="p-10 from-blue-50 min-h-screen">
       <h2 className="text-2xl font-semibold text-[#0a4e75] mb-6">Kategori</h2>
@@ -54,14 +61,25 @@ export default function Kategori() {
               className="bg-white border rounded-2xl shadow-lg hover:shadow-2xl transition-transform transform hover:-translate-y-1"
             >
               {/* Gambar buku */}
-            <Image
-              src={book.gambar ? `/buku/${book.gambar}` : "/no-image.png"}
-              alt={book.judul || "Gambar Buku"}
-              width={300}
-              height={380}
-              className="rounded-t-2xl object-contain w-full h-[280px] bg-white p-3"
-            />
 
+              {book.gambar?.startsWith("http") ? (
+                // Gambar eksternal
+                <img
+                  src={getImageSrc(book.gambar)}
+                  alt={book.judul}
+                  className="rounded-t-2xl object-contain w-full h-[280px] bg-white p-3"
+                  onError={(e) => (e.target.src = "/no-image.png")}
+                />
+              ) : (
+                // Gambar internal
+                <Image
+                  src={getImageSrc(book.gambar)}
+                  alt={book.judul}
+                  width={300}
+                  height={380}
+                  className="rounded-t-2xl object-contain w-full h-[280px] bg-white p-3"
+                />
+              )}
 
               <div className="p-5 text-center">
                 <h3 className="font-semibold text-xl text-gray-800 mb-2">
@@ -72,7 +90,7 @@ export default function Kategori() {
                   Kategori: {book.kategori}
                 </p>
 
-                {/* FIX DETAIL BUTTON → MASUK KE HALAMAN DETAIL */}
+                {/* Tombol Detail */}
                 <Link href={`/user/detail/${book.id_buku}`}>
                   <button className="bg-green-600 text-white px-6 py-2 rounded-lg text-sm hover:bg-green-700 transition-all w-full">
                     Detail

@@ -29,9 +29,8 @@ export async function GET() {
   }
 }
 
-// =======================
-// POST → Tambah buku baru
-// =======================
+
+// POST Tambah buku baru
 export async function POST(req) {
   try {
     const {

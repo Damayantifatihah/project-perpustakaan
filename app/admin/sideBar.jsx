@@ -8,11 +8,10 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // 🔹 MENU KHUSUS ADMIN
+  //  MENU KHUSUS ADMIN
   const menus = [
     { name: "Dashboard", icon: <Home size={26} />, path: "/admin/dashboard" },
     { name: "Kelola Buku", icon: <BookCopy size={26} />, path: "/admin/kelolaBuku" },
-    { name: "Kategori", icon: <Layers size={26} />, path: "/admin/kategori" },
   ];
 
   const handleLogout = () => {
