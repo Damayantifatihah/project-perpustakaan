@@ -10,13 +10,38 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   const router = useRouter();
 
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Ambil user dari localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      setLoading(false);
+      return;
     }
+
+    const fetchUser = async () => {
+      try {
+        setLoading(true);
+
+        const res = await fetch(`/api/user/${userId}`);
+
+        if (!res.ok) {
+          console.error("Gagal fetch user:", await res.text());
+          setLoading(false);
+          return;
+        }
+
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
   }, []);
 
   const menus = [
@@ -27,7 +52,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   ];
 
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    localStorage.removeItem("userId");
     router.push("/");
   };
 
@@ -37,7 +62,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         isOpen ? "w-72" : "w-24"
       }`}
     >
-      {/* Logo */}
       <div
         className="flex items-center gap-5 px-7 py-8 border-b border-gray-100 cursor-pointer"
         onClick={toggleSidebar}
@@ -58,22 +82,23 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             height={70}
             className="rounded-full object-cover"
           />
+
           <div>
             <p className="font-semibold text-lg text-[#0a4e75]">
-              {user?.namaLengkap || "Loading..."}
-              <br />
-              {user?.kelasJurusan || "-"}
+              {loading ? "Loading..." : user?.namaLengkap || "Nama Tidak Ditemukan"} <br />
+              {loading ? "-" : user?.kelasJurusan || "-"}
             </p>
-
-            <p className="text-green-600 font-bold"> ● SISWA</p>
+            <p className="text-green-600 font-bold">
+              ● {loading ? "SISWA" : user?.role === "siswa" ? "SISWA" : "PENGGUNA"}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Menu Navigasi */}
       <nav className="flex-1 mt-7">
         {menus.map((menu, index) => {
           const isActive = pathname === menu.path;
+
           return (
             <Link
               key={index}
@@ -92,7 +117,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         })}
       </nav>
 
-      {/* Logout */}
       <div className="mt-auto px-7 py-8 border-t border-gray-100">
         <button
           onClick={handleLogout}

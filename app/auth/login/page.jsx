@@ -32,17 +32,35 @@ export default function LoginPage() {
         body: JSON.stringify(formData),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      console.log("RAW:", text);
 
-      if (res.ok) {
-        // SIMPAN USER KE LOCALSTORAGE
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        alert("Login berhasil!");
-        router.push("/user/home");
-      } else {
-        alert(data.error || "Login gagal");
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        alert("Server error: API mengirim HTML!");
+        return;
       }
+
+      // Jika error dari API
+      if (!res.ok) {
+        alert(data.error || "Login gagal");
+        return;
+      }
+
+      // Simpan userId
+      localStorage.setItem("userId", data.userId);
+
+      alert("Login berhasil!");
+
+      // Redirect role
+      if (data.role === "admin") {
+        window.location.href = "/admin/dashboard";
+      } else {
+        window.location.href = "/user/home";
+      }
+
     } catch (err) {
       console.error("LOGIN ERROR:", err);
       alert("Terjadi kesalahan server");
@@ -50,6 +68,7 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="flex h-screen">

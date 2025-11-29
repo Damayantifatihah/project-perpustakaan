@@ -19,9 +19,9 @@ export default function Dashboard() {
     fetchPeminjaman();
   }, []);
 
-  // ========================
+  
   //   FETCH STATISTIK
-  // ========================
+  
   async function fetchStatistik() {
     try {
       // Fetch buku
@@ -76,9 +76,9 @@ export default function Dashboard() {
     }
   }
 
-  // ========================
-  //        UPDATE STATUS
-  // ========================
+  
+  //  UPDATE STATUS
+  
   async function updateStatus(id, newStatus) {
     if (!id) return alert("ID peminjaman tidak valid!");
 
@@ -164,7 +164,7 @@ export default function Dashboard() {
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nama Siswa</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Kelas</th>
 
-                    {/* ➕ TELEPON BARU */}
+                    {/* TELEPON BARU */}
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Telepon</th>
 
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Buku</th>

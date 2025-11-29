@@ -26,9 +26,9 @@ export default function PeminjamanPage() {
   const [tanggalPinjam, setTanggalPinjam] = useState("");
   const [tanggalKembali, setTanggalKembali] = useState("");
 
-  // ===============================================
+
   //  AUTO ISI DATA USER DARI LOCAL STORAGE
-  // ===============================================
+
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (user) {
