@@ -8,14 +8,22 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  //  MENU KHUSUS ADMIN
+  // MENU KHUSUS ADMIN
   const menus = [
     { name: "Dashboard", icon: <Home size={26} />, path: "/admin/dashboard" },
     { name: "Kelola Buku", icon: <BookCopy size={26} />, path: "/admin/kelolaBuku" },
   ];
 
-  const handleLogout = () => {
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+      });
+
+      router.push("/");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   return (
@@ -48,9 +56,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
             className="rounded-full object-cover"
           />
           <div>
-            <p className="font-semibold text-lg text-[#0a4e75]">
-              Admin Perpustakaan
-            </p>
+            <p className="font-semibold text-lg text-[#0a4e75]">Admin Perpustakaan</p>
             <p className="text-blue-600 text-1g font-bold"> ● ADMIN</p>
           </div>
         </div>
@@ -76,7 +82,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
           );
         })}
       </nav>
-
 
       {/* Logout */}
       <div className="mt-auto px-7 py-8 border-t border-gray-100">

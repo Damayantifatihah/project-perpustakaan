@@ -43,18 +43,19 @@ export default function LoginPage() {
         return;
       }
 
-      // Jika error dari API
+      // Jika API kirim error
       if (!res.ok) {
         alert(data.error || "Login gagal");
         return;
       }
 
-      // Simpan userId
+      // ✔ Simpan userId dan role ke localStorage (untuk Sidebar & Admin Dashboard)
       localStorage.setItem("userId", data.userId);
+      localStorage.setItem("role", data.role);
 
       alert("Login berhasil!");
 
-      // Redirect role
+      // Redirect berdasarkan role
       if (data.role === "admin") {
         window.location.href = "/admin/dashboard";
       } else {
@@ -68,7 +69,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="flex h-screen">

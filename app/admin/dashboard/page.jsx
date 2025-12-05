@@ -4,9 +4,14 @@ import { Book, Layers, BookmarkCheck, CheckCircle, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Dashboard() {
+  // ======================
+  // SEMUA HOOK WAJIB DI ATAS
+  // ======================
+  const [allowed, setAllowed] = useState(null);
+
   const [statistik, setStatistik] = useState({
     totalBuku: 0,
-    totalKategori: 0, // dipakai untuk total dikembalikan
+    totalKategori: 0,
     dipinjam: 0,
     tersedia: 0,
   });
@@ -14,43 +19,48 @@ export default function Dashboard() {
   const [peminjaman, setPeminjaman] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Cek role admin
   useEffect(() => {
-    fetchStatistik();
-    fetchPeminjaman();
+    const role = localStorage.getItem("role");
+
+    if (!role || role !== "admin") {
+      setAllowed(false);
+    } else {
+      setAllowed(true);
+    }
   }, []);
 
-  
-  //   FETCH STATISTIK
-  
+  // Fetch data dashboard
+  useEffect(() => {
+    if (allowed === true) {
+      fetchStatistik();
+      fetchPeminjaman();
+    }
+  }, [allowed]);
+
   async function fetchStatistik() {
     try {
-      // Fetch buku
       const bukuRes = await fetch("/api/buku");
       const buku = bukuRes.ok ? await bukuRes.json() : [];
 
-      // Fetch peminjaman
       const peminjamanRes = await fetch("/api/peminjaman");
       const peminjamanData = peminjamanRes.ok ? await peminjamanRes.json() : [];
 
-      // Hitung dipinjam
       const dipinjamCount = Array.isArray(peminjamanData)
         ? peminjamanData.filter((p) => p.status === "Dipinjam").length
         : 0;
 
-      // Hitung dikembalikan
       const dikembalikanCount = Array.isArray(peminjamanData)
         ? peminjamanData.filter((p) => p.status === "Dikembalikan").length
         : 0;
 
-      // Hitung tersedia
       const tersediaCount = Array.isArray(buku)
         ? buku.length - dipinjamCount
         : 0;
 
-      // Set statistik
       setStatistik({
         totalBuku: Array.isArray(buku) ? buku.length : 0,
-        totalKategori: dikembalikanCount,   // ← sekarang menampilkan total dikembalikan
+        totalKategori: dikembalikanCount,
         dipinjam: dipinjamCount,
         tersedia: tersediaCount,
       });
@@ -59,9 +69,6 @@ export default function Dashboard() {
     }
   }
 
-  // ========================
-  //  FETCH PEMINJAMAN
-  // ========================
   async function fetchPeminjaman() {
     try {
       setLoading(true);
@@ -76,9 +83,6 @@ export default function Dashboard() {
     }
   }
 
-  
-  //  UPDATE STATUS
-  
   async function updateStatus(id, newStatus) {
     if (!id) return alert("ID peminjaman tidak valid!");
 
@@ -92,13 +96,11 @@ export default function Dashboard() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        console.error("Server error:", data);
         alert(data.error || "Gagal update status");
         return;
       }
 
       alert("Status berhasil diupdate!");
-
       fetchPeminjaman();
       fetchStatistik();
     } catch (error) {
@@ -107,7 +109,6 @@ export default function Dashboard() {
     }
   }
 
-  // Format tanggal
   const formatTanggal = (tanggal) => {
     if (!tanggal) return "-";
     const d = new Date(tanggal);
@@ -119,16 +120,42 @@ export default function Dashboard() {
     });
   };
 
+  // ======================
+  // RETURN TETAP DI BAWAH
+  // ======================
+
+  if (allowed === null) {
+    return (
+      <div className="h-screen flex items-center justify-center text-xl">
+        Loading...
+      </div>
+    );
+  }
+
+  if (allowed === false) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-100 text-center">
+        <h1 className="text-6xl font-bold text-red-600 mb-4">403</h1>
+        <p className="text-xl text-gray-700 mb-6">Forbidden - Kamu tidak punya akses</p>
+        <a
+          href="/user/home"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Kembali ke Home
+        </a>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Dashboard Admin</h1>
           <p className="text-gray-600">Kelola peminjaman dan statistik perpustakaan</p>
         </div>
 
-        {/* Statistik Card */}
+        {/* Statistik */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card icon={<Book size={32} />} color="blue" label="Total Buku" value={statistik.totalBuku} />
           <Card icon={<Layers size={32} />} color="purple" label="Sudah Dikembalikan" value={statistik.totalKategori} />
@@ -136,7 +163,7 @@ export default function Dashboard() {
           <Card icon={<CheckCircle size={32} />} color="green" label="Buku Tersedia" value={statistik.tersedia} />
         </div>
 
-        {/* Tabel Peminjaman */}
+        {/* Tabel */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
           <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-indigo-50 to-purple-50">
             <div className="flex items-center gap-3">
@@ -163,10 +190,7 @@ export default function Dashboard() {
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">No</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nama Siswa</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Kelas</th>
-
-                    {/* TELEPON BARU */}
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Telepon</th>
-
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Buku</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tgl Pinjam</th>
                     <th className="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Tgl Kembali</th>
@@ -178,10 +202,10 @@ export default function Dashboard() {
                 <tbody className="divide-y divide-gray-200">
                   {peminjaman.map((item, index) => (
                     <tr key={item.id_pinjam} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{index + 1}</td>
 
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{item.nama}</div>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        {item.nama}
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -190,8 +214,7 @@ export default function Dashboard() {
                         </span>
                       </td>
 
-                      {/* ➕ TELEPON BARU */}
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 text-sm text-gray-900">
                         {item.telepon || "-"}
                       </td>
 
@@ -210,9 +233,13 @@ export default function Dashboard() {
                         </div>
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTanggal(item.tgl_pinjam)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {formatTanggal(item.tgl_pinjam)}
+                      </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatTanggal(item.tgl_kembali)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">
+                        {formatTanggal(item.tgl_kembali)}
+                      </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -230,19 +257,19 @@ export default function Dashboard() {
                         </span>
                       </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-center">
+                      <td className="px-6 py-4 text-center">
                         <div className="flex justify-center gap-2">
                           {item.status === "Proses" && (
                             <>
                               <button
                                 onClick={() => updateStatus(item.id_pinjam, "Dipinjam")}
-                                className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700"
                               >
                                 Setujui
                               </button>
                               <button
                                 onClick={() => updateStatus(item.id_pinjam, "Ditolak")}
-                                className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+                                className="px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-lg hover:bg-red-700"
                               >
                                 Tolak
                               </button>
@@ -252,7 +279,7 @@ export default function Dashboard() {
                           {item.status === "Menunggu Proses" && (
                             <button
                               onClick={() => updateStatus(item.id_pinjam, "Dikembalikan")}
-                              className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                              className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg hover:bg-green-700"
                             >
                               Konfirmasi
                             </button>
@@ -276,9 +303,7 @@ export default function Dashboard() {
   );
 }
 
-// ========================
-//    CARD COMPONENT
-// ========================
+// CARD
 function Card({ icon, color, label, value }) {
   const colorClasses = {
     blue: "bg-blue-100 text-blue-600",

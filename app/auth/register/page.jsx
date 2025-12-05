@@ -57,7 +57,7 @@ export default function RegisterPage() {
         );
 
         alert("Registrasi berhasil!");
-        router.push("/user/home");
+        router.push("/user/login");
       } else {
         alert(data.error || "Gagal registrasi");
       }

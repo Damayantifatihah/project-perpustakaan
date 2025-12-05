@@ -14,7 +14,6 @@ export async function POST(req) {
       );
     }
 
-    // Cek user dari database
     const [rows] = await pool.query(
       "SELECT * FROM users WHERE email = ? LIMIT 1",
       [email]
@@ -29,7 +28,6 @@ export async function POST(req) {
 
     const user = rows[0];
 
-    // Cek password
     const cocok = await bcrypt.compare(password, user.password);
 
     if (!cocok) {
@@ -39,30 +37,28 @@ export async function POST(req) {
       );
     }
 
-    // Buat JWT token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET || "SUPER_SECRET",
       { expiresIn: "1d" }
     );
 
-    // Simpan token ke cookie
     const response = NextResponse.json({
       message: "Login berhasil",
-      userId: user.id,     // ⬅ ini untuk sidebar fetch data user
-      token: token         // ⬅ optional kalau mau dipakai frontend
+      userId: user.id,
+      role: user.role,
+      token: token,
     });
 
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",     // 🔥 FIX DISINI
       maxAge: 60 * 60 * 24,
-      path: "/",
+      path: "/",           // HARUS SAMA DENGAN LOGOUT
     });
 
     return response;
-
   } catch (err) {
     console.error("ERROR LOGIN:", err);
     return NextResponse.json(

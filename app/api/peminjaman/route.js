@@ -13,9 +13,17 @@ export async function POST(req) {
       tgl_pinjam,
       tgl_kembali,
       judul_buku,
-      id_buku,
+      id_buku
     } = await req.json();
 
+    if (!nama || !telepon || !kelas || !tgl_pinjam || !tgl_kembali || !id_buku) {
+      return NextResponse.json(
+        { error: "Semua data wajib diisi!" },
+        { status: 400 }
+      );
+    }
+
+    // QUERY INSERT SESUAI STRUKTUR TABEL BARU
     const query = `
       INSERT INTO peminjaman 
       (nama, telepon, kelas, tgl_pinjam, tgl_kembali, judul_buku, id_buku, status)
@@ -29,7 +37,7 @@ export async function POST(req) {
       tgl_pinjam,
       tgl_kembali,
       judul_buku,
-      id_buku,
+      id_buku
     ];
 
     const [result] = await pool.query(query, values);
@@ -65,7 +73,7 @@ export async function GET() {
         b.gambar AS gambar_buku
 
       FROM peminjaman p
-      JOIN buku b ON p.id_buku = b.id_buku
+      LEFT JOIN buku b ON p.id_buku = b.id_buku
       ORDER BY p.id_pinjam DESC
     `);
 

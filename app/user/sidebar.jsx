@@ -51,10 +51,17 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { name: "Peminjaman", icon: <BookmarkCheck size={26} />, path: "/user/daftarpinjam" },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem("userId");
-    router.push("/");
+  // -------- FIX LOGOUT + HAPUS COOKIE OTOMATIS --------
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/logout", { method: "POST" }); // hapus cookie via server
+      localStorage.removeItem("userId"); // hapus localStorage
+      router.push("/"); // redirect
+    } catch (err) {
+      console.error("Error logout:", err);
+    }
   };
+  // -----------------------------------------------------
 
   return (
     <aside
@@ -72,7 +79,6 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
         )}
       </div>
 
-      {/* User Info */}
       {isOpen && (
         <div className="flex items-center gap-5 px-7 py-6 border-b border-gray-100">
           <Image
@@ -89,7 +95,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
               {loading ? "-" : user?.kelasJurusan || "-"}
             </p>
             <p className="text-green-600 font-bold">
-              ● {loading ? "SISWA" : user?.role === "siswa" ? "SISWA" : "PENGGUNA"}
+              ● {loading ? "SISWA" : user?.role === "siswa" ? "SISWA" : "ADMIN"}
             </p>
           </div>
         </div>

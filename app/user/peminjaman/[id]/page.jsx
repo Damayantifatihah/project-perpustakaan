@@ -27,19 +27,32 @@ export default function PeminjamanPage() {
   const [tanggalKembali, setTanggalKembali] = useState("");
 
 
-  //  AUTO ISI DATA USER DARI LOCAL STORAGE
 
-  useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (user) {
-      const u = JSON.parse(user);
+ // AUTO ISI DATA USER DARI DATABASE
+useEffect(() => {
+  const userId = localStorage.getItem("userId");
 
-      setNama(u.namaLengkap || "");
-      setTelepon(u.telepon || "");
-      setKelas(u.kelasJurusan || "");
+  if (!userId) return;
+
+  async function fetchUser() {
+    try {
+      const res = await fetch(`/api/user/${userId}`);
+      const data = await res.json();
+
+      if (data) {
+        setNama(data.namaLengkap || "");
+        setTelepon(data.telepon || "");
+        setKelas(data.kelasJurusan || "");
+      }
+    } catch (err) {
+      console.error("Gagal mengambil data user:", err);
     }
-  }, []);
-  // ===============================================
+  }
+
+  fetchUser();
+}, []);
+
+ 
 
   // Fetch detail buku
   useEffect(() => {

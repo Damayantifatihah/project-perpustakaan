@@ -17,9 +17,9 @@ export function middleware(req) {
   }
 
   // Jika SUDAH login tapi buka halaman /auth pindah ke home
-  if (token && isLoginPage) {
-       return NextResponse.redirect(new URL("/", req.url));
-  }
+  // if (token && isLoginPage) {
+  //      return NextResponse.redirect(new URL("/", req.url));
+  // }
 
   // if (path.startsWith('/admin') && token.role !== 'admin') {
   //   return NextResponse.redirect(new URL("/auth/login", req.url));
