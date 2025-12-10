@@ -62,7 +62,7 @@ export default function RegisterPage() {
         alert(data.error || "Gagal registrasi");
       }
     } catch (err) {
-      console.error("❌ Error:", err);
+      console.error("Error:", err);
       alert("Terjadi kesalahan server");
     } finally {
       setLoading(false);

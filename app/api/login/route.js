@@ -53,7 +53,7 @@ export async function POST(req) {
     response.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",     // 🔥 FIX DISINI
+      sameSite: "lax",     // FIX DISINI
       maxAge: 60 * 60 * 24,
       path: "/",           // HARUS SAMA DENGAN LOGOUT
     });

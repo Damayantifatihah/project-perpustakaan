@@ -6,7 +6,7 @@ export async function POST() {
   res.cookies.set("token", "", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",     // WAJIB SAMA DENGAN LOGIN
+    sameSite: "lax",     // untuk mencegah cookie terkirim dari web lain ookie hanya dikirim ketika pengguna benar-benar membuka website
     expires: new Date(0),
     path: "/",           //  WAJIB SAMA
   });

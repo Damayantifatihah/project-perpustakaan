@@ -30,7 +30,11 @@ export async function GET(req, context) {
       );
     }
 
-    return NextResponse.json(rows[0]);
+    return NextResponse.json(rows[0], {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      },
+    });
   } catch (error) {
     console.error("API DETAIL ERROR:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -42,9 +46,13 @@ export async function GET(req, context) {
 // =======================
 export async function PUT(req, context) {
   try {
-    const { id } = context.params;
+    const { id } = await context.params; 
     const data = await req.json();
 
+    console.log(" Update data received:", data);
+    console.log(" ID buku:", id);
+
+    
     const updateQuery = `
       UPDATE buku SET
         judul = ?,
@@ -57,22 +65,39 @@ export async function PUT(req, context) {
       WHERE id_buku = ?
     `;
 
-    await pool.query(updateQuery, [
+    const [result] = await pool.query(updateQuery, [
       data.judul,
       data.pengarang,
       data.penerbit,
-      data.tahun_terbit,
+      parseInt(data.tahun_terbit), 
       data.kategori,
-      data.stok,
-      data.gambar,
+      parseInt(data.stok), 
+      data.gambar || null,
       id,
     ]);
 
-    return NextResponse.json({ message: "Buku berhasil diperbarui" });
+    // Cek apakah ada row yang ter-update
+    if (result.affectedRows === 0) {
+      return NextResponse.json(
+        { error: "Buku tidak ditemukan atau tidak ada perubahan" },
+        { status: 404 }
+      );
+    }
+
+    console.log("✅ Update berhasil, affected rows:", result.affectedRows);
+
+    return NextResponse.json({ 
+      message: "Buku berhasil diperbarui",
+      affectedRows: result.affectedRows 
+    }, {
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    });
   } catch (error) {
     console.error("API UPDATE ERROR:", error);
     return NextResponse.json(
-      { error: "Gagal update buku" },
+      { error: "Gagal update buku", details: error.message },
       { status: 500 }
     );
   }
@@ -87,9 +112,19 @@ export async function DELETE(req, context) {
 
     const deleteQuery = `DELETE FROM buku WHERE id_buku = ?`;
 
-    await pool.query(deleteQuery, [id]);
+    const [result] = await pool.query(deleteQuery, [id]);
 
-    return NextResponse.json({ message: "Buku berhasil dihapus" });
+    if (result.affectedRows === 0) {
+      return NextResponse.json(
+        { error: "Buku tidak ditemukan" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ 
+      message: "Buku berhasil dihapus",
+      affectedRows: result.affectedRows 
+    });
   } catch (error) {
     console.error("API DELETE ERROR:", error);
     return NextResponse.json(

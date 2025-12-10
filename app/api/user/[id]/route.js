@@ -3,6 +3,8 @@ import pool from "@/lib/db";
 
 export async function GET(req, context) {
   try {
+
+    
     // params harus di-AWAIT sesuai aturan Next terbaru
     const { id } = await context.params;
 
@@ -29,6 +31,7 @@ export async function GET(req, context) {
     }
 
     return NextResponse.json(rows[0]);
+
   } catch (err) {
     console.error("ERROR GET USER:", err);
     return NextResponse.json(

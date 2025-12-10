@@ -2,7 +2,6 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 export default function EditBuku() {
@@ -13,34 +12,38 @@ export default function EditBuku() {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Form state
   const [formData, setFormData] = useState({
     judul: "",
-    penulis: "",
+    pengarang: "",
     penerbit: "",
     tahun_terbit: "",
     stok: "",
     kategori: "",
-    deskripsi: ""
+    gambar: ""
   });
 
   // Ambil detail buku
   useEffect(() => {
     if (!id) return;
 
-    fetch(`/api/buku/${id}`)
+    // ✅ Tambahkan timestamp untuk bypass cache
+    fetch(`/api/buku/${id}?t=${Date.now()}`, { 
+      cache: 'no-store' 
+    })
       .then((res) => res.json())
       .then((data) => {
+        console.log("Data buku loaded:", data);
         setBook(data);
         setFormData({
           judul: data.judul || "",
-          penulis: data.penulis || "",
+          pengarang: data.pengarang || "",
           penerbit: data.penerbit || "",
           tahun_terbit: data.tahun_terbit || "",
           stok: data.stok || "",
           kategori: data.kategori || "",
-          deskripsi: data.deskripsi || ""
+          gambar: data.gambar || ""
         });
         setLoading(false);
       })
@@ -63,23 +66,38 @@ export default function EditBuku() {
     setSaving(true);
 
     try {
+      console.log("Mengirim update untuk ID:", id);
+      console.log("Payload:", formData);
+
       const response = await fetch(`/api/buku/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
+        cache: 'no-store' // ✅ Bypass cache
       });
+
+      const result = await response.json();
+      console.log("📥 Response dari server:", result);
 
       if (response.ok) {
         alert("Buku berhasil diperbarui!");
-        router.push("/admin/kelolaBuku");
+        
+        // Refresh halaman sebelum redirect untuk clear cache
+        router.refresh();
+        
+        // Gunakan setTimeout untuk memastikan refresh selesai
+        setTimeout(() => {
+          router.push(`/admin/kelolaBuku`);
+        }, 100);
       } else {
-        alert("Gagal memperbarui buku");
+        alert(`Gagal memperbarui buku: ${result.error || 'Unknown error'}`);
+        console.error("Error response:", result);
       }
     } catch (error) {
-      console.error("Error:", error);
-      alert("Terjadi kesalahan");
+      console.error("Submit Error:", error);
+      alert("Terjadi kesalahan: " + error.message);
     } finally {
       setSaving(false);
     }
@@ -103,7 +121,7 @@ export default function EditBuku() {
   if (!book) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
-        <div className="text-6xl mb-4"></div>
+        <div className="text-6xl mb-4">📚</div>
         <h2 className="text-2xl font-bold text-gray-800 mb-2">Buku Tidak Ditemukan</h2>
         <p className="text-gray-600 mb-6">Buku yang Anda cari tidak ditemukan dalam sistem.</p>
         <Link href="/admin/kelolaBuku">
@@ -118,7 +136,7 @@ export default function EditBuku() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-6">
-        {/* Header */}
+
         <div className="mb-8">
           <Link
             href="/admin/kelolaBuku"
@@ -134,42 +152,39 @@ export default function EditBuku() {
         <form onSubmit={handleSubmit}>
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
-              
-              {/* Kolom Kiri - Cover Buku */}
+
               <div className="lg:col-span-1 bg-gradient-to-br from-[#0a4e75] to-[#093d5a] p-8 flex flex-col items-center justify-center">
                 <div className="w-full max-w-xs">
                   <div className="bg-white rounded-xl shadow-2xl p-4 mb-4">
-                  <img
-                    src={
-                      book.gambar
-                        ? book.gambar.startsWith("http")
-                          ? book.gambar
-                          : `/buku/${book.gambar}`
-                        : "/no-image.jpg"
-                    }
-                    alt={book.judul}
-                    className="w-full h-full object-contain p-2 group-hover:scale-105 transition"
-                    onError={(e) => (e.target.src = "/no-image.jpg")}
-                  />
-
+                    <img
+                      src={
+                        formData.gambar
+                          ? formData.gambar.startsWith("http")
+                            ? formData.gambar
+                            : `/buku/${formData.gambar}`
+                          : "/no-image.jpg"
+                      }
+                      alt={formData.judul}
+                      className="w-full h-full object-contain p-2"
+                      onError={(e) => (e.target.src = "/no-image.jpg")}
+                    />
                   </div>
                   <div className="text-center text-white">
                     <p className="text-sm opacity-90">Cover Buku</p>
                     <p className="text-xs opacity-75 mt-1">
-                      {book.gambar ? "Gambar tersedia" : "Tidak ada gambar"}
+                      {formData.gambar ? "Gambar tersedia" : "Tidak ada gambar"}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Kolom Kanan - Form */}
               <div className="lg:col-span-2 p-8 md:p-10">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6 pb-4 border-b-2 border-gray-200">
                   Informasi Buku
                 </h2>
 
                 <div className="space-y-6">
-                  {/* Judul Buku */}
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Judul Buku <span className="text-red-500">*</span>
@@ -185,7 +200,6 @@ export default function EditBuku() {
                     />
                   </div>
 
-                  {/* Penulis & Penerbit */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -193,11 +207,11 @@ export default function EditBuku() {
                       </label>
                       <input
                         type="text"
-                        name="penulis"
-                        value={formData.penulis}
+                        name="pengarang"
+                        value={formData.pengarang}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4e75] focus:border-transparent outline-none transition"
-                        placeholder="Nama penulis"
+                        placeholder="Nama pengarang"
                         required
                       />
                     </div>
@@ -218,7 +232,6 @@ export default function EditBuku() {
                     </div>
                   </div>
 
-                  {/* Tahun Terbit, Stok & Kategori */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -276,9 +289,24 @@ export default function EditBuku() {
                       </select>
                     </div>
                   </div>
+
+                  {/* ✅ Tambahkan field URL Gambar */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      URL Gambar Cover
+                    </label>
+                    <input
+                      type="text"
+                      name="gambar"
+                      value={formData.gambar}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0a4e75] focus:border-transparent outline-none transition"
+                      placeholder="https://example.com/cover.jpg atau nama-file.jpg"
+                    />
+                  
+                  </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t-2 border-gray-200">
                   <button
                     type="button"
@@ -298,7 +326,7 @@ export default function EditBuku() {
                         Menyimpan...
                       </span>
                     ) : (
-                      " Simpan Perubahan"
+                      "Simpan Perubahan"
                     )}
                   </button>
                 </div>

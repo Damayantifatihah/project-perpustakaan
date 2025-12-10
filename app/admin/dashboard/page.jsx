@@ -135,7 +135,7 @@ export default function Dashboard() {
   if (allowed === false) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-gray-100 text-center">
-        <h1 className="text-6xl font-bold text-red-600 mb-4">403</h1>
+        <h1 className="text-6xl font-bold text-red-600 mb-4">404</h1>
         <p className="text-xl text-gray-700 mb-6">Forbidden - Kamu tidak punya akses</p>
         <a
           href="/user/home"

@@ -45,9 +45,9 @@ export async function PATCH(req, context) {
       [status, id]
     );
 
-    // =======================
+    
     // LOGIC STOK & PENGEMBALIAN
-    // =======================
+    
 
     // Jika status DIPINJAM → stok -1
     if (status === "Dipinjam") {

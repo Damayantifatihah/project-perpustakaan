@@ -2,37 +2,35 @@ import { NextResponse } from "next/server";
 
 export function middleware(req) {
   const token = req.cookies.get("token");
-  const path = req.nextUrl.pathname;
+  const path = req.nextUrl.pathname; // buat ngecek lagi di halaman apa
 
-  const isLoginPage = path.startsWith("/auth");
+  const isLoginPage = path.startsWith("/auth"); 
 
   // Halaman yang butuh login
   const isProtected =
     path.startsWith("/user") ||
     path.startsWith("/admin");
   
-  // Jika halaman protected tapi tidak ada token  PAKSA ke login
+  //   PAKSA ke login
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // Jika SUDAH login tapi buka halaman /auth pindah ke home
-  // if (token && isLoginPage) {
-  //      return NextResponse.redirect(new URL("/", req.url));
-  // }
+  // Jika SUDAH login tapi buka halaman login
+  if (token && isLoginPage) {
+       return NextResponse.redirect(new URL("/user/home", req.url));
+  }
 
-  // if (path.startsWith('/admin') && token.role !== 'admin') {
-  //   return NextResponse.redirect(new URL("/auth/login", req.url));
-  // }
 
-  return NextResponse.next();
+  return NextResponse.next(); //
 }
 
+// middle ware hanya berlaku untuk halaman 
 export const config = {
   matcher: [
     "/user/:path*",
     "/admin/:path*",
-   
+    "/auth/:path*",
   ],
 };
 

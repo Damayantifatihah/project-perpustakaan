@@ -67,7 +67,7 @@ export default function HomePage() {
           Daftar Buku
         </h2>
 
-        {/* 🔍 Search Bar */}
+        {/* Search Bar */}
         <div className="mb-6">
           <input
             type="text"

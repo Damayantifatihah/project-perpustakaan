@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { BookOpen, Plus, Edit, Search, Trash2 } from "lucide-react";
 
 export default function KelolaBuku() {
+  const [allowed, setAllowed] = useState(null);
+
   const [buku, setBuku] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -18,6 +20,17 @@ export default function KelolaBuku() {
     gambar: "",
   });
 
+  // CEK ROLE ADMIN
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+
+    if (!role || role !== "admin") {
+      setAllowed(false);
+    } else {
+      setAllowed(true);
+    }
+  }, []);
+
   // FETCH BUKU
   const getBuku = async () => {
     try {
@@ -31,8 +44,10 @@ export default function KelolaBuku() {
   };
 
   useEffect(() => {
-    getBuku();
-  }, []);
+    if (allowed === true) {
+      getBuku();
+    }
+  }, [allowed]);
 
   // TAMBAH BUKU
   const handleSubmit = async () => {
@@ -91,13 +106,42 @@ export default function KelolaBuku() {
     }
   };
 
-  // PENCARIAN
+  // FILTERING
   const filteredBuku = buku.filter((item) =>
     item.judul.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.pengarang?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.penerbit?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.kategori?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // ============================
+  // HALAMAN FORBIDDEN
+  // ============================
+  if (allowed === null) {
+    return (
+      <div className="h-screen flex items-center justify-center text-xl">
+        Loading...
+      </div>
+    );
+  }
+
+  //untuk mengatur halaman login
+  if (allowed === false) {
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-gray-100 text-center">
+        <h1 className="text-6xl font-bold text-red-600 mb-4">404</h1>
+        <p className="text-xl text-gray-700 mb-6">
+          Forbidden - Kamu tidak punya akses
+        </p>
+        <a
+          href="/user/home"
+          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Kembali ke Home
+        </a>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-6">
