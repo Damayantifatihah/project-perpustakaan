@@ -120,48 +120,62 @@ export default function DaftarPinjam() {
   }
 
   return (
-    <div className="w-full from-blue-50 px-6 py-6 flex justify-center">
-      <div className="w-full bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
-        <h1 className="text-2xl font-bold text-[#0A4E75] mb-6">
-          Daftar Peminjaman
-        </h1>
+    <div className="w-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 md:px-6 py-8 flex justify-center min-h-screen">
+      <div className="w-full max-w-6xl bg-white p-6 md:p-8 rounded-2xl shadow-lg border border-gray-100">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-[#0A4E75]">
+            Daftar Peminjaman
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Riwayat dan status peminjaman buku Anda
+          </p>
+        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full table-auto border-collapse">
+        <div className="overflow-x-auto rounded-xl border border-gray-100">
+          <table className="w-full table-auto border-collapse text-sm">
             <thead>
-              <tr className="text-left text-gray-700 border-b">
-                <th className="py-3 font-semibold">Nama Siswa</th>
-                <th className="py-3 font-semibold">Judul Buku</th>
-                <th className="py-3 font-semibold">Tanggal Pinjam</th>
-                <th className="py-3 font-semibold">Tanggal Pengembalian</th>
-                <th className="py-3 font-semibold text-center">Status</th>
+              <tr className="text-left text-gray-600 bg-gray-50 border-b border-gray-100">
+                <th className="py-3 px-4 font-semibold">Nama Siswa</th>
+                <th className="py-3 px-4 font-semibold">Judul Buku</th>
+                <th className="py-3 px-4 font-semibold">Tanggal Pinjam</th>
+                <th className="py-3 px-4 font-semibold">Tanggal Pengembalian</th>
+                <th className="py-3 px-4 font-semibold text-center">Status</th>
               </tr>
             </thead>
 
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="5" className="py-4 text-center text-gray-500">
+                  <td colSpan="5" className="py-10 text-center text-gray-400">
                     Memuat data...
                   </td>
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="py-4 text-center text-gray-500">
+                  <td colSpan="5" className="py-10 text-center text-gray-400">
                     Belum ada data peminjaman.
                   </td>
                 </tr>
               ) : (
-                data.map((item) => (
-                  <tr key={item.id_pinjam} className="border-b text-gray-800">
-                    <td className="py-3">{item.nama}</td>
-                    <td className="py-3">{item.judul_buku}</td>
-                    <td className="py-3">{formatTanggal(item.tgl_pinjam)}</td>
-                    <td className="py-3">{hitungTanggalKembali(item.tgl_pinjam)}</td>
-                    <td className="py-3">
-                      <div className="flex justify-center items-center gap-4">
+                data.map((item, idx) => (
+                  <tr
+                    key={item.id_pinjam}
+                    className={`border-b border-gray-100 text-gray-800 hover:bg-gray-50 transition ${
+                      idx % 2 === 1 ? "bg-gray-50/40" : ""
+                    }`}
+                  >
+                    <td className="py-3 px-4 font-medium">{item.nama}</td>
+                    <td className="py-3 px-4">{item.judul_buku}</td>
+                    <td className="py-3 px-4 text-gray-600">
+                      {formatTanggal(item.tgl_pinjam)}
+                    </td>
+                    <td className="py-3 px-4 text-gray-600">
+                      {hitungTanggalKembali(item.tgl_pinjam)}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex justify-center items-center gap-3">
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium w-36 text-center ${badgeStatus(
+                          className={`px-3 py-1 rounded-full text-xs font-semibold w-32 text-center ${badgeStatus(
                             item.status
                           )}`}
                         >
@@ -171,7 +185,7 @@ export default function DaftarPinjam() {
                         {item.status === "Dipinjam" && (
                           <button
                             onClick={() => handleKembalikan(item.id_pinjam)}
-                            className="px-3 py-1 w-28 bg-green-600 text-white rounded-full text-sm hover:bg-green-700"
+                            className="px-3 py-1 w-28 bg-green-600 text-white rounded-full text-xs font-semibold hover:bg-green-700 transition shadow-sm"
                           >
                             Kembalikan
                           </button>

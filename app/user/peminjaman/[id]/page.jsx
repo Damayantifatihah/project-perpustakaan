@@ -164,118 +164,113 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-10 px-4">
       <div className="max-w-6xl mx-auto">
         <button
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 mb-6 transition"
+          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 mb-8 transition font-medium"
           onClick={() => router.back()}
         >
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-semibold">Kembali</span>
+          <span>Kembali</span>
         </button>
 
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <BookOpen className="w-10 h-10 text-indigo-600" />
-            <h1 className="text-4xl font-bold text-gray-800">
+        <div className="text-center mb-10">
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <BookOpen className="w-9 h-9 text-indigo-600" />
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
               Form Peminjaman Buku
             </h1>
           </div>
-          <p className="text-gray-600">
+          <p className="text-gray-500">
             Lengkapi formulir di bawah ini untuk meminjam buku
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-6">
-              <div className="text-center mb-4">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">
-                  Detail Buku
-                </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+          {/* DETAIL BUKU */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 lg:sticky lg:top-8">
+              <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
+                Detail Buku
+              </h2>
 
-                <div className="relative w-full h-64 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl overflow-hidden mb-4 shadow-md">
-                  <img
-                    src={
-                      buku.gambar?.startsWith("http")
-                        ? buku.gambar
-                        : buku.gambar
-                        ? `/buku/${buku.gambar}`
-                        : "/no-image.jpg"
-                    }
-                    alt={buku.judul}
-                    className="w-full h-full object-contain p-2"
-                    onError={(e) => (e.target.src = "/no-image.jpg")}
-                  />
+              <div className="relative w-full h-60 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-xl overflow-hidden mb-5">
+                <img
+                  src={
+                    buku.gambar?.startsWith("http")
+                      ? buku.gambar
+                      : buku.gambar
+                      ? `/buku/${buku.gambar}`
+                      : "/no-image.jpg"
+                  }
+                  alt={buku.judul}
+                  className="w-full h-full object-contain p-3"
+                  onError={(e) => (e.target.src = "/no-image.jpg")}
+                />
 
-                  <div className="absolute top-3 right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
-                    {buku.kategori}
-                  </div>
-                </div>
+                <span className="absolute top-3 right-3 bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">
+                  {buku.kategori}
+                </span>
               </div>
 
-              <div className="space-y-3">
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Judul Buku</p>
-                  <p className="font-bold text-gray-800">{buku.judul}</p>
+              <dl className="divide-y divide-gray-100 border-t border-gray-100">
+                <div className="flex items-center justify-between py-3">
+                  <dt className="text-sm text-gray-500">Judul</dt>
+                  <dd className="text-sm font-semibold text-gray-800 text-right max-w-[60%]">
+                    {buku.judul}
+                  </dd>
                 </div>
-
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Pengarang</p>
-                  <p className="font-semibold text-gray-800">
+                <div className="flex items-center justify-between py-3">
+                  <dt className="text-sm text-gray-500">Pengarang</dt>
+                  <dd className="text-sm font-semibold text-gray-800 text-right max-w-[60%]">
                     {buku.pengarang}
-                  </p>
+                  </dd>
                 </div>
-
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Penerbit</p>
-                  <p className="font-semibold text-gray-800">
+                <div className="flex items-center justify-between py-3">
+                  <dt className="text-sm text-gray-500">Penerbit</dt>
+                  <dd className="text-sm font-semibold text-gray-800 text-right max-w-[60%]">
                     {buku.penerbit}
-                  </p>
+                  </dd>
                 </div>
-
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Tahun Terbit</p>
-                  <p className="font-semibold text-gray-800">
+                <div className="flex items-center justify-between py-3">
+                  <dt className="text-sm text-gray-500">Tahun Terbit</dt>
+                  <dd className="text-sm font-semibold text-gray-800">
                     {buku.tahun_terbit}
-                  </p>
+                  </dd>
                 </div>
-
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-lg">
-                  <p className="text-xs text-gray-600 mb-1">Stok</p>
-                  <p className="font-semibold text-gray-800">
+                <div className="flex items-center justify-between py-3">
+                  <dt className="text-sm text-gray-500">Stok</dt>
+                  <dd className="text-sm font-semibold text-gray-800">
                     {buku.stok ?? "Tidak diketahui"}
-                  </p>
+                  </dd>
                 </div>
-              </div>
+              </dl>
 
-              <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                <div className="flex items-start gap-3">
-                  <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-900 mb-1">
-                      Perhatian
-                    </p>
-                    <p className="text-xs text-blue-800">
-                      Masa peminjaman maksimal 7 hari.
-                    </p>
-                  </div>
+              <div className="mt-5 bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-blue-900">
+                    Perhatian
+                  </p>
+                  <p className="text-xs text-blue-800 mt-0.5">
+                    Masa peminjaman maksimal 7 hari.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* FORM */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 md:p-8">
+              <h2 className="text-lg font-bold text-gray-800 mb-6">
                 Data Peminjam
               </h2>
 
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    <User className="w-4 h-4 inline-block mr-2" />
+                  <label className="flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+                    <User className="w-4 h-4 mr-2 text-gray-400" />
                     Nama Lengkap
                   </label>
                   <input
@@ -283,13 +278,13 @@ useEffect(() => {
                     required
                     value={nama}
                     readOnly
-                    className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
+                    className="w-full border border-gray-200 bg-gray-50 px-4 py-2.5 rounded-lg text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    <Phone className="w-4 h-4 inline-block mr-2" />
+                  <label className="flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+                    <Phone className="w-4 h-4 mr-2 text-gray-400" />
                     Nomor Telepon
                   </label>
                   <input
@@ -297,13 +292,13 @@ useEffect(() => {
                     required
                     value={telepon}
                     readOnly
-                    className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
+                    className="w-full border border-gray-200 bg-gray-50 px-4 py-2.5 rounded-lg text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    <GraduationCap className="w-4 h-4 inline-block mr-2" />
+                  <label className="flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+                    <GraduationCap className="w-4 h-4 mr-2 text-gray-400" />
                     Kelas / Jurusan
                   </label>
                   <input
@@ -311,14 +306,14 @@ useEffect(() => {
                     required
                     value={kelas}
                     readOnly
-                    className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
+                    className="w-full border border-gray-200 bg-gray-50 px-4 py-2.5 rounded-lg text-gray-700 cursor-not-allowed"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      <Calendar className="w-4 h-4 inline-block mr-2" />
+                    <label className="flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                       Tanggal Pinjam
                     </label>
                     <input
@@ -326,46 +321,44 @@ useEffect(() => {
                       required
                       value={tanggalPinjam}
                       onChange={(e) => handleTanggalPinjam(e.target.value)}
-                      className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl focus:border-indigo-500 text-black"
+                      className="w-full border border-gray-200 px-4 py-2.5 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      <Calendar className="w-4 h-4 inline-block mr-2" />
+                    <label className="flex items-center text-sm font-semibold text-gray-700 mb-1.5">
+                      <Calendar className="w-4 h-4 mr-2 text-gray-400" />
                       Tanggal Kembali
                     </label>
                     <input
                       type="date"
                       value={tanggalKembali}
                       disabled
-                      className="w-full border-2 border-gray-200 px-4 py-3 rounded-xl bg-gray-100 cursor-not-allowed text-black"
+                      className="w-full border border-gray-200 px-4 py-2.5 rounded-lg bg-gray-50 cursor-not-allowed text-gray-700"
                     />
-                    <p className="text-xs text-gray-500 mt-2 italic">
+                    <p className="text-xs text-gray-400 mt-1.5 italic">
                       * 7 hari dari tanggal pinjam
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-green-900 mb-1">
-                        Proses Peminjaman
-                      </p>
-                      <p className="text-xs text-green-800">
-                        Setelah submit, admin akan memproses peminjaman Anda.
-                      </p>
-                    </div>
+                <div className="bg-green-50 border border-green-100 p-4 rounded-xl flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-green-900">
+                      Proses Peminjaman
+                    </p>
+                    <p className="text-xs text-green-800 mt-0.5">
+                      Setelah submit, admin akan memproses peminjaman Anda.
+                    </p>
                   </div>
                 </div>
 
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition"
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-semibold text-base shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.99] transition flex items-center justify-center gap-2"
                 >
-                  <CheckCircle className="w-5 h-5 inline-block mr-2" />
+                  <CheckCircle className="w-5 h-5" />
                   Ajukan Peminjaman
                 </button>
               </div>
