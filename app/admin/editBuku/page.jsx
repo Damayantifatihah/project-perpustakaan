@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-export default function EditBuku() {
+function EditBukuContent() {
   const params = useSearchParams();
   const router = useRouter();
   const id = params.get("id");
@@ -336,5 +337,18 @@ export default function EditBuku() {
         </form>
       </div>
     </div>
+  );
+}
+
+export default function EditBuku() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#0a4e75] mb-4"></div>
+        <p className="text-lg text-gray-600">Memuat...</p>
+      </div>
+    }>
+      <EditBukuContent />
+    </Suspense>
   );
 }
